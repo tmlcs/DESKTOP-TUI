@@ -1,0 +1,43 @@
+# Build
+build/
+cmake-build-*/
+*.o
+*.so
+*.a
+*.dylib
+*.dll
+*.exe
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-*
+.project
+.settings/
+.classpath
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Compilers
+*.orig
+*.rej
+*.patch
+
+# Testing
+Testing/
+CTestTestfile.cmake
+
+# Misc
+*.log
+*.tmp

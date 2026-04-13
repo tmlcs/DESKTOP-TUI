@@ -1,0 +1,26 @@
+# <type>(<scope>): <subject>
+#
+# Types: feat, fix, docs, style, refactor, test, chore, build, ci, perf
+# Scope: optional, e.g. ui, platform, core, window, desktop
+#
+# Subject: max 72 chars, imperative mood, lowercase, no period at end
+#
+# Body (optional): wrap at 72 chars, explain WHAT and WHY, not HOW
+#
+# Footer (optional): BREAKING CHANGE, closes #N, refs #N
+#
+# Examples:
+#   feat(ui): add double-buffered renderer with dirty regions
+#   fix(platform): resolve termios raw mode on macOS
+#   docs: update README with build instructions
+#   refactor(window): simplify z-order management
+#
+# --- COMMIT END ---
+#
+# Rules:
+# - Use imperative mood in subject ("add" not "added")
+# - Don't capitalize first letter of subject
+# - No period at end of subject
+# - Separate subject from body with blank line
+# - Use body to explain WHAT and WHY, not HOW
+# - Reference issues/PRs in footer

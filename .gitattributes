@@ -1,0 +1,29 @@
+# Auto-detect text files and handle line endings
+* text=auto
+
+# C/C++ source files - LF (Unix-style)
+*.cpp text eol=lf
+*.hpp text eol=lf
+*.c text eol=lf
+*.h text eol=lf
+
+# Config files - LF
+CMakeLists.txt text eol=lf
+*.cmake text eol=lf
+*.txt text eol=lf
+*.md text eol=lf
+
+# Shell scripts - LF + executable
+*.sh text eol=lf
+
+# Windows batch files - CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binaries - binary
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.exe binary
+*.dll binary
