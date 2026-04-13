@@ -34,13 +34,15 @@ public:
 
     // Resize buffers
     void resize(int cols, int rows) {
+        bool size_changed = (cols_ != cols || rows_ != rows);
         cols_ = cols;
         rows_ = rows;
         back_buffer_.assign(cols * rows, Cell());
-        if (front_buffer_.size() != static_cast<size_t>(cols * rows)) {
+        if (size_changed) {
+            // Reset front buffer to force full redraw on new dimensions
             front_buffer_.assign(cols * rows, Cell());
-            dirty_ = true; // full redraw on resize
         }
+        dirty_ = true;
     }
 
     // Clear the back buffer
@@ -168,13 +170,26 @@ public:
 
     // Center text in a region
     void write_center(int y, const std::string& text, int width, const Style& style) {
-        int start_x = (width - static_cast<int>(text.size())) / 2;
+        int display_len = static_cast<int>(text.size());
+        if (display_len >= width) {
+            // Text too wide, truncate and write at left of region
+            write(0, y, text.substr(0, static_cast<size_t>(std::max(0, width))), style);
+            return;
+        }
+        int start_x = (width - display_len) / 2;
         write(start_x, y, text, style);
     }
 
-    // Right-align text
+    // Right-align text within a region
     void write_right(int x, int y, const std::string& text, int max_width, const Style& style) {
-        int start_x = x + max_width - static_cast<int>(text.size());
+        int display_len = static_cast<int>(text.size());
+        int available = std::max(0, max_width);
+        if (display_len >= available) {
+            // Text too wide, truncate
+            write(x, y, text.substr(0, static_cast<size_t>(available)), style);
+            return;
+        }
+        int start_x = x + max_width - display_len;
         write(start_x, y, text, style);
     }
 
@@ -254,6 +269,7 @@ public:
     Rect bounds() const { return {0, 0, cols_, rows_}; }
 
 private:
+    int bounds_clamp_x(int x) const { return std::max(0, std::min(x, cols_ - 1)); }
     void emit_style(const Style& style) {
         // Emit ANSI escape sequences for style
         std::string seq = "\033[0"; // reset first

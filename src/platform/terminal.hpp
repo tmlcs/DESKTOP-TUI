@@ -85,6 +85,13 @@ public:
 
     // Platform-specific: detect terminal type
     virtual std::string term_type() const = 0;
+
+    // Check for pending resize (platform-specific)
+    // Default implementation returns false (no resize detection)
+    virtual bool check_resize(int& new_cols, int& new_rows) {
+        (void)new_cols; (void)new_rows;
+        return false;
+    }
 };
 
 /// Factory: create the appropriate terminal for this platform

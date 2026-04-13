@@ -37,55 +37,54 @@ public:
     }
 
     std::optional<Event> poll() override {
-        unsigned char buf[16];
+        // If we have buffered bytes from a previous partial read, try to complete them
+        if (!buffer_.empty()) {
+            // Try to read more to complete the sequence
+            unsigned char more[16];
+            ssize_t n = read(STDIN_FILENO, more, sizeof(more));
+            if (n > 0) {
+                buffer_.insert(buffer_.end(), more, more + n);
+            }
+            // Try to parse the buffer
+            auto result = try_parse_buffer();
+            if (result.has_value()) {
+                return result;
+            }
+            // If still incomplete after adding more data, return nullopt
+            // The next poll() will try again
+            if (n > 0) return std::nullopt;
+            // No more data available, parse what we have
+            auto fallback = try_parse_buffer();
+            if (fallback.has_value()) return fallback;
+            // Buffer is stale/incomplete, clear it and return escape
+            buffer_.clear();
+            Event e(EventType::KeyPress);
+            e.key_code = Keys::Escape;
+            e.key_name = "Escape";
+            return e;
+        }
+
+        unsigned char buf[32];
         ssize_t n = read(STDIN_FILENO, buf, sizeof(buf));
         if (n <= 0) return std::nullopt;
 
-        // Parse escape sequences
-        if (buf[0] == '\033') {
-            if (n == 1) {
-                // Lone escape = Escape key
-                Event e(EventType::KeyPress);
-                e.key_code = Keys::Escape;
-                e.key_name = "Escape";
-                return e;
-            }
-            if (buf[1] == '[') {
-                return parse_csi(buf, n);
-            }
-            if (buf[1] == 'O') {
-                return parse_ss3(buf, n);
-            }
-            if (buf[1] >= ' ' && buf[1] <= '~') {
-                // Alt+key
-                Event e(EventType::KeyPress);
-                e.key_code = buf[1];
-                e.key_name = std::string(1, (char)buf[1]);
-                e.mods.alt = true;
-                return e;
-            }
+        // Try to parse; if incomplete, buffer the bytes
+        buffer_.assign(buf, buf + n);
+        auto result = try_parse_buffer();
+        if (result.has_value()) {
+            return result;
         }
 
-        // Regular character
+        // Incomplete sequence — save to buffer for next poll
+        // This handles fragmented input
+        auto fallback = try_parse_buffer();
+        if (fallback.has_value()) return fallback;
+
+        // Truly incomplete, return escape as fallback
+        buffer_.clear();
         Event e(EventType::KeyPress);
-        e.key_code = buf[0];
-        if (buf[0] == '\r' || buf[0] == '\n') {
-            e.key_code = Keys::Enter;
-            e.key_name = "Enter";
-        } else if (buf[0] == '\t') {
-            e.key_code = Keys::Tab;
-            e.key_name = "Tab";
-        } else if (buf[0] == '\b' || buf[0] == 127) {
-            e.key_code = Keys::Backspace;
-            e.key_name = "Backspace";
-        } else if (buf[0] < 32) {
-            // Control character
-            e.key_code = buf[0] + '@';  // Ctrl+A = 'A', etc.
-            e.mods.control = true;
-            e.key_name = std::string(1, (char)e.key_code);
-        } else {
-            e.key_name = std::string(1, (char)buf[0]);
-        }
+        e.key_code = Keys::Escape;
+        e.key_name = "Escape";
         return e;
     }
 
@@ -93,14 +92,87 @@ public:
     int mouse_y() const override { return mouse_y_; }
 
 private:
-    std::optional<Event> parse_csi(const unsigned char* buf, ssize_t n) {
-        Event e;
+    /// Try to parse the current buffer. Returns event if complete.
+    /// Clears consumed bytes from buffer on success.
+    std::optional<Event> try_parse_buffer() {
+        if (buffer_.empty()) return std::nullopt;
 
-        if (n >= 4 && buf[2] == '<') {
-            // SGR 1006 mouse: ESC [ < button ; x ; y M/m
+        if (buffer_[0] == '\033') {
+            if (buffer_.size() == 1) {
+                // Incomplete: could be lone escape or start of sequence
+                return std::nullopt; // wait for more
+            }
+            if (buffer_[1] == '[') {
+                auto result = try_parse_csi();
+                if (result.has_value()) return result;
+                // CSI sequence might be incomplete
+                return std::nullopt;
+            }
+            if (buffer_[1] == 'O') {
+                auto result = try_parse_ss3();
+                if (result.has_value()) return result;
+                return std::nullopt;
+            }
+            if (buffer_[1] >= ' ' && buffer_[1] <= '~') {
+                // Alt+key (complete)
+                Event e(EventType::KeyPress);
+                e.key_code = buffer_[1];
+                e.key_name = std::string(1, (char)buffer_[1]);
+                e.mods.alt = true;
+                buffer_.erase(buffer_.begin(), buffer_.begin() + 2);
+                return e;
+            }
+            // Unknown escape sequence, skip it
+            buffer_.erase(buffer_.begin());
+            return std::nullopt;
+        }
+
+        // Regular character
+        Event e(EventType::KeyPress);
+        e.key_code = buffer_[0];
+        if (buffer_[0] == '\r' || buffer_[0] == '\n') {
+            e.key_code = Keys::Enter;
+            e.key_name = "Enter";
+        } else if (buffer_[0] == '\t') {
+            e.key_code = Keys::Tab;
+            e.key_name = "Tab";
+        } else if (buffer_[0] == '\b' || buffer_[0] == 127) {
+            e.key_code = Keys::Backspace;
+            e.key_name = "Backspace";
+        } else if (buffer_[0] < 32) {
+            e.key_code = buffer_[0] + '@';
+            e.mods.control = true;
+            e.key_name = std::string(1, (char)e.key_code);
+        } else {
+            e.key_name = std::string(1, (char)buffer_[0]);
+        }
+        buffer_.erase(buffer_.begin());
+        return e;
+    }
+
+    std::optional<Event> try_parse_csi() {
+        // Minimum CSI: ESC [ X  = 3 bytes
+        if (buffer_.size() < 3) return std::nullopt;
+
+        // SGR 1006 mouse: ESC [ < button ; x ; y M/m
+        if (buffer_.size() >= 4 && buffer_[2] == '<') {
+            // Try to find the terminator ('M' or 'm')
+            size_t term_pos = 0;
+            bool found = false;
+            for (size_t i = 3; i < buffer_.size(); i++) {
+                if (buffer_[i] == 'M' || buffer_[i] == 'm') {
+                    term_pos = i;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) return std::nullopt; // incomplete
+
+            Event e;
             int button, x, y;
             char last;
-            if (sscanf((const char*)buf + 3, "%d;%d;%d%c", &button, &x, &y, &last) == 4) {
+            std::string seq(buffer_.begin() + 3, buffer_.begin() + term_pos + 1);
+            if (sscanf(seq.c_str(), "%d;%d;%d%c", &button, &x, &y, &last) == 4) {
                 mouse_x_ = x - 1;
                 mouse_y_ = y - 1;
 
@@ -119,83 +191,116 @@ private:
                 }
                 e.mouse_x = mouse_x_;
                 e.mouse_y = mouse_y_;
+                buffer_.erase(buffer_.begin(), buffer_.begin() + static_cast<ptrdiff_t>(term_pos) + 1);
                 return e;
             }
+            // Parse failed, skip this sequence
+            buffer_.erase(buffer_.begin(), buffer_.begin() + static_cast<ptrdiff_t>(term_pos) + 1);
+            return std::nullopt;
         }
 
-        if (n == 3 && buf[2] >= 'A' && buf[2] <= 'D') {
-            // Arrow keys
+        // Arrow keys: ESC [ A/B/C/D = 3 bytes
+        if (buffer_.size() >= 3 && buffer_[2] >= 'A' && buffer_[2] <= 'D') {
+            Event e;
             e.type = EventType::KeyPress;
-            switch (buf[2]) {
+            switch (buffer_[2]) {
                 case 'A': e.key_code = Keys::ArrowUp; e.key_name = "ArrowUp"; break;
                 case 'B': e.key_code = Keys::ArrowDown; e.key_name = "ArrowDown"; break;
                 case 'C': e.key_code = Keys::ArrowRight; e.key_name = "ArrowRight"; break;
                 case 'D': e.key_code = Keys::ArrowLeft; e.key_name = "ArrowLeft"; break;
             }
+            buffer_.erase(buffer_.begin(), buffer_.begin() + 3);
             return e;
         }
 
-        // Handle more CSI sequences (Home, End, F1-F5, Delete, Insert, PageUp/Down)
-        if (n == 3) {
-            switch (buf[2]) {
-                case 'H': e.type = EventType::KeyPress; e.key_code = Keys::Home; e.key_name = "Home"; return e;
-                case 'F': e.type = EventType::KeyPress; e.key_code = Keys::End; e.key_name = "End"; return e;
-                case 'Z': e.type = EventType::KeyPress; e.key_code = Keys::Tab; e.key_name = "Tab"; e.mods.shift = true; return e;
+        // Home/End/Shift-Tab: ESC [ H/F/Z = 3 bytes
+        if (buffer_.size() >= 3) {
+            switch (buffer_[2]) {
+                case 'H': {
+                    Event e; e.type = EventType::KeyPress; e.key_code = Keys::Home; e.key_name = "Home";
+                    buffer_.erase(buffer_.begin(), buffer_.begin() + 3); return e;
+                }
+                case 'F': {
+                    Event e; e.type = EventType::KeyPress; e.key_code = Keys::End; e.key_name = "End";
+                    buffer_.erase(buffer_.begin(), buffer_.begin() + 3); return e;
+                }
+                case 'Z': {
+                    Event e; e.type = EventType::KeyPress; e.key_code = Keys::Tab; e.key_name = "Tab";
+                    e.mods.shift = true;
+                    buffer_.erase(buffer_.begin(), buffer_.begin() + 3); return e;
+                }
             }
         }
 
-        // Extended sequences: ESC [ 1 ; X ~ for function keys with modifiers
-        if (n >= 5 && buf[n-1] == '~') {
+        // Extended: ESC [ 1 ; 2 ~ etc (need at least 6 bytes for "ESC[1;2~")
+        // ESC [ N ~ where N is a number
+        if (buffer_.size() >= 4 && buffer_[2] >= '0' && buffer_[2] <= '9') {
+            // Find the terminator '~'
+            size_t term_pos = 0;
+            bool found = false;
+            for (size_t i = 3; i < buffer_.size(); i++) {
+                if (buffer_[i] == '~') {
+                    term_pos = i;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) return std::nullopt; // incomplete
+
             int code;
-            sscanf((const char*)buf + 2, "%d", &code);
-            e.type = EventType::KeyPress;
-            switch (code) {
-                case 1: case 7: e.key_code = Keys::Home; e.key_name = "Home"; break;
-                case 2: e.key_code = Keys::Insert; e.key_name = "Insert"; break;
-                case 3: e.key_code = Keys::Delete_; e.key_name = "Delete"; break;
-                case 4: case 8: e.key_code = Keys::End; e.key_name = "End"; break;
-                case 5: e.key_code = Keys::PageUp; e.key_name = "PageUp"; break;
-                case 6: e.key_code = Keys::PageDown; e.key_name = "PageDown"; break;
-                case 11: e.key_code = Keys::F1; e.key_name = "F1"; break;
-                case 12: e.key_code = Keys::F2; e.key_name = "F2"; break;
-                case 13: e.key_code = Keys::F3; e.key_name = "F3"; break;
-                case 14: e.key_code = Keys::F4; e.key_name = "F4"; break;
-                case 15: e.key_code = Keys::F5; e.key_name = "F5"; break;
-                case 17: e.key_code = Keys::F6; e.key_name = "F6"; break;
-                case 18: e.key_code = Keys::F7; e.key_name = "F7"; break;
-                case 19: e.key_code = Keys::F8; e.key_name = "F8"; break;
-                case 20: e.key_code = Keys::F9; e.key_name = "F9"; break;
-                case 21: e.key_code = Keys::F10; e.key_name = "F10"; break;
-                default: e.key_code = buf[0]; e.key_name = "Unknown"; break;
+            std::string num_str(buffer_.begin() + 2, buffer_.begin() + static_cast<ptrdiff_t>(term_pos));
+            if (sscanf(num_str.c_str(), "%d", &code) == 1) {
+                Event e;
+                e.type = EventType::KeyPress;
+                switch (code) {
+                    case 1: case 7: e.key_code = Keys::Home; e.key_name = "Home"; break;
+                    case 2: e.key_code = Keys::Insert; e.key_name = "Insert"; break;
+                    case 3: e.key_code = Keys::Delete_; e.key_name = "Delete"; break;
+                    case 4: case 8: e.key_code = Keys::End; e.key_name = "End"; break;
+                    case 5: e.key_code = Keys::PageUp; e.key_name = "PageUp"; break;
+                    case 6: e.key_code = Keys::PageDown; e.key_name = "PageDown"; break;
+                    case 11: e.key_code = Keys::F1; e.key_name = "F1"; break;
+                    case 12: e.key_code = Keys::F2; e.key_name = "F2"; break;
+                    case 13: e.key_code = Keys::F3; e.key_name = "F3"; break;
+                    case 14: e.key_code = Keys::F4; e.key_name = "F4"; break;
+                    case 15: e.key_code = Keys::F5; e.key_name = "F5"; break;
+                    case 17: e.key_code = Keys::F6; e.key_name = "F6"; break;
+                    case 18: e.key_code = Keys::F7; e.key_name = "F7"; break;
+                    case 19: e.key_code = Keys::F8; e.key_name = "F8"; break;
+                    case 20: e.key_code = Keys::F9; e.key_name = "F9"; break;
+                    case 21: e.key_code = Keys::F10; e.key_name = "F10"; break;
+                    default: e.key_code = buffer_[0]; e.key_name = "Unknown"; break;
+                }
+                buffer_.erase(buffer_.begin(), buffer_.begin() + static_cast<ptrdiff_t>(term_pos) + 1);
+                return e;
             }
-            return e;
+            buffer_.erase(buffer_.begin(), buffer_.begin() + static_cast<ptrdiff_t>(term_pos) + 1);
+            return std::nullopt;
         }
 
-        // Fallback
-        e.type = EventType::KeyPress;
-        e.key_code = buf[0];
-        e.key_name = "Unknown";
-        return e;
+        return std::nullopt; // incomplete or unrecognized
     }
 
-    std::optional<Event> parse_ss3(const unsigned char* buf, ssize_t n) {
+    std::optional<Event> try_parse_ss3() {
+        // SS3: ESC O P/Q/R/S/H/F = 3 bytes
+        if (buffer_.size() < 3) return std::nullopt;
+
         Event e;
         e.type = EventType::KeyPress;
-        if (n == 3) {
-            switch (buf[2]) {
-                case 'P': e.key_code = Keys::F1; e.key_name = "F1"; return e;
-                case 'Q': e.key_code = Keys::F2; e.key_name = "F2"; return e;
-                case 'R': e.key_code = Keys::F3; e.key_name = "F3"; return e;
-                case 'S': e.key_code = Keys::F4; e.key_name = "F4"; return e;
-                case 'H': e.key_code = Keys::Home; e.key_name = "Home"; return e;
-                case 'F': e.key_code = Keys::End; e.key_name = "End"; return e;
-            }
+        switch (buffer_[2]) {
+            case 'P': e.key_code = Keys::F1; e.key_name = "F1"; break;
+            case 'Q': e.key_code = Keys::F2; e.key_name = "F2"; break;
+            case 'R': e.key_code = Keys::F3; e.key_name = "F3"; break;
+            case 'S': e.key_code = Keys::F4; e.key_name = "F4"; break;
+            case 'H': e.key_code = Keys::Home; e.key_name = "Home"; break;
+            case 'F': e.key_code = Keys::End; e.key_name = "End"; break;
+            default: return std::nullopt;
         }
-        e.key_code = buf[0];
-        e.key_name = "Unknown";
+        buffer_.erase(buffer_.begin(), buffer_.begin() + 3);
         return e;
     }
 
+    std::vector<unsigned char> buffer_;
     int mouse_x_, mouse_y_;
 };
 

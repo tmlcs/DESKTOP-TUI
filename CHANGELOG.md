@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-04-14
+
+### Fixed
+
+- **SIGWINCH resize detection**: Terminal now properly detects window resize events via signal-driven flag polling. `ITerminal::check_resize()` method added for main loop to query pending resizes.
+- **Front buffer reset on resize**: Renderer now resets the front buffer when terminal dimensions change, preventing visual artifacts from stale cells.
+- **Bounds checking in text alignment**: `write_center()` and `write_right()` now clamp coordinates and truncate text that exceeds the available width, preventing out-of-bounds writes.
+- **Robust input buffering**: Input parser now uses a byte buffer to handle fragmented escape sequences. Partial CSI/SS3 sequences are accumulated across poll calls instead of being discarded.
+- **Mouse event propagation to children**: `Panel::handle_event()` now performs hit-testing for mouse events, giving focus to clicked child widgets before dispatching the event.
+- **`move_window_to_desktop` functional**: DesktopManager can now correctly move windows between desktops by finding the source desktop, removing the window, and adding it to the target.
+- **Emergency terminal cleanup**: `atexit()` handler now restores terminal state (reset style, show cursor, exit alternate screen) if the process exits abnormally.
+- **CJK wide character width**: `display_width()` now correctly counts 2 cells for CJK, Hangul, Hiragana, Katakana, and fullwidth characters.
+
+### Changed
+
+- `Desktop::windows()` now returns by value (copy) instead of const reference, with internal cleanup of stale entries.
+- `Desktop` now tracks window IDs in an `unordered_set` for O(1) `has_window()` lookups.
+
 ## [0.1.0] - 2026-04-13
 
 ### Added

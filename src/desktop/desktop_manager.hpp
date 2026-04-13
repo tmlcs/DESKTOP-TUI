@@ -108,12 +108,21 @@ public:
 
     // Move a window to a specific desktop
     void move_window_to_desktop(WindowId win_id, int desktop_index) {
-        // Remove from all desktops
+        if (desktop_index < 0 || desktop_index >= static_cast<int>(desktops_.size())) return;
+        // Find and remove from current desktop, add to target
         for (auto& d : desktops_) {
-            d->remove_window(win_id);
+            auto* win = d->find_window(win_id);
+            if (win) {
+                // Get the shared_ptr from the source before removing
+                for (auto& w : d->windows()) {
+                    if (w->id() == win_id) {
+                        d->remove_window(win_id);
+                        desktops_[desktop_index]->add_window(w);
+                        return;
+                    }
+                }
+            }
         }
-        // Add to target desktop
-        // Note: WindowManager owns the window, desktops just track membership
     }
 
     // Render the desktop indicator bar (workspace dots at bottom)

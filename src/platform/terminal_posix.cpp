@@ -16,7 +16,8 @@ namespace tui {
 
 class PosixTerminal : public ITerminal {
 public:
-    PosixTerminal() : cols_(80), rows_(24), raw_mode_(false), alt_screen_(false) {
+    PosixTerminal() : cols_(80), rows_(24), raw_mode_(false), alt_screen_(false), resize_pending_(false) {
+        g_active_terminal = this;
         detect_capabilities();
         update_size();
     }
@@ -29,13 +30,27 @@ public:
 
     bool init() override {
         update_size();
-        // Install SIGWINCH handler
+        // Install SIGWINCH handler that sets a flag for the main loop to detect
         struct sigaction sa;
-        sa.sa_handler = [](int) { /* size updated on signal */ };
+        memset(&sa, 0, sizeof(sa));
+        sa.sa_handler = sigwinch_handler;
         sa.sa_flags = 0;
         sigemptyset(&sa.sa_mask);
         sigaction(SIGWINCH, &sa, nullptr);
         return true;
+    }
+
+    // Check if a resize event is pending and handle it
+    // Returns true if the size changed
+    bool check_resize(int& new_cols, int& new_rows) {
+        if (!resize_pending_) return false;
+        resize_pending_ = false;
+        int old_cols = cols_;
+        int old_rows = rows_;
+        update_size();
+        new_cols = cols_;
+        new_rows = rows_;
+        return (cols_ != old_cols || rows_ != old_rows);
     }
 
     void shutdown() override {
@@ -279,8 +294,24 @@ private:
     TerminalCaps caps_;
     bool raw_mode_;
     bool alt_screen_;
+    volatile sig_atomic_t resize_pending_;
     struct termios orig_termios_;
+
+    static void sigwinch_handler(int) {
+        // We can't access instance members from a C signal handler.
+        // Instead, we use a global pointer to the active terminal instance.
+        // This is set when the terminal is created.
+        if (g_active_terminal) {
+            g_active_terminal->resize_pending_ = true;
+        }
+    }
+
+    // Global pointer for signal handler access (set in constructor)
+    static PosixTerminal* g_active_terminal;
 };
+
+// Static member initialization
+PosixTerminal* PosixTerminal::g_active_terminal = nullptr;
 
 ITerminal* create_terminal() {
     return new PosixTerminal();

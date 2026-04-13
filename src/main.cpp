@@ -45,6 +45,14 @@ public:
         std::signal(SIGINT, signal_handler);
         std::signal(SIGTERM, signal_handler);
 
+        // Emergency cleanup on exit
+        std::atexit([]() {
+            // This runs if normal cleanup doesn't complete
+            // Just in case, try to restore terminal
+            printf("\033[0m\033[?25h\033[?1049l");
+            fflush(stdout);
+        });
+
         // Initialize terminal
         if (!term_->init()) {
             std::cerr << "Failed to initialize terminal\n";
@@ -94,6 +102,14 @@ public:
         renderer_.mark_dirty();
 
         while (g_running) {
+            // Check for pending resize (signal-driven)
+            int new_cols = 0, new_rows = 0;
+            if (term_->check_resize(new_cols, new_rows)) {
+                renderer_.resize(new_cols, new_rows);
+                desktop_mgr_.on_resize(new_cols, new_rows);
+                renderer_.mark_dirty();
+            }
+
             // Process all pending input events
             while (auto event = poll_input()) {
                 if (!handle_event(*event)) break;

@@ -58,13 +58,39 @@ inline std::string repeat(const std::string& s, size_t n) {
     return result;
 }
 
-/// Count visible display width of a UTF-8 string (simplified: assumes 1 cell per codepoint)
+/// Count visible display width of a UTF-8 string
+/// Handles CJK wide characters (which take 2 cells)
 inline size_t display_width(const std::string& utf8_str) {
-    // This is simplified - a full implementation would handle CJK wide chars,
-    // combining marks, zero-width joiners, etc.
     std::wstring_convert<std::codecvt_utf8_utf16<char32_t>, char32_t> converter;
     auto str = converter.from_bytes(utf8_str);
-    return str.size();
+    size_t width = 0;
+    for (char32_t ch : str) {
+        // CJK Unified Ideographs and extensions (most common wide ranges)
+        if ((ch >= 0x4E00 && ch <= 0x9FFF) ||    // CJK Unified Ideographs
+            (ch >= 0x3400 && ch <= 0x4DBF) ||     // CJK Extension A
+            (ch >= 0x20000 && ch <= 0x2A6DF) ||   // CJK Extension B
+            (ch >= 0x2A700 && ch <= 0x2B73F) ||   // CJK Extension C
+            (ch >= 0x2B740 && ch <= 0x2B81F) ||   // CJK Extension D
+            (ch >= 0x2B820 && ch <= 0x2CEAF) ||   // CJK Extension E
+            (ch >= 0xF900 && ch <= 0xFAFF) ||     // CJK Compatibility Ideographs
+            (ch >= 0x2F800 && ch <= 0x2FA1F) ||   // CJK Compatibility Ideographs Supplement
+            (ch >= 0xAC00 && ch <= 0xD7AF) ||     // Hangul Syllables
+            (ch >= 0x1100 && ch <= 0x115F) ||     // Hangul Jamo
+            (ch >= 0x3040 && ch <= 0x309F) ||     // Hiragana
+            (ch >= 0x30A0 && ch <= 0x30FF) ||     // Katakana
+            (ch >= 0xFF01 && ch <= 0xFF60) ||     // Fullwidth ASCII
+            (ch >= 0xFFE0 && ch <= 0xFFE6) ||     // Fullwidth symbols
+            (ch >= 0x2E80 && ch <= 0x2EFF) ||     // CJK Radicals
+            (ch >= 0x31C0 && ch <= 0x31EF)) {     // CJK Strokes
+            width += 2;
+        } else if (ch < 0x20 || ch == 0x7F) {
+            // Control characters: 0 width
+            continue;
+        } else {
+            width += 1;
+        }
+    }
+    return width;
 }
 
 /// Truncate UTF-8 string to display width

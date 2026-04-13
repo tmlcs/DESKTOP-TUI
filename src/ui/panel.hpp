@@ -73,6 +73,27 @@ public:
     }
 
     bool handle_event(const Event& e) override {
+        // For mouse events, first do hit-testing against children
+        if (e.type == EventType::MouseDown || e.type == EventType::MouseScroll) {
+            // Test children in reverse z-order (topmost first)
+            for (auto it = children_.rbegin(); it != children_.rend(); ++it) {
+                auto& child = *it;
+                if (child->visible() && child->can_focus()) {
+                    Rect cb = child->bounds();
+                    if (cb.contains(e.mouse_x, e.mouse_y)) {
+                        // Give focus to this child
+                        if (!child->focused()) {
+                            if (focused_child()) focused_child()->blur();
+                            child->focus();
+                        }
+                        return child->handle_event(e);
+                    }
+                }
+            }
+            // Click didn't hit any focusable child, blur focused child
+            if (focused_child()) focused_child()->blur();
+        }
+
         // Try focused child first
         for (auto& child : children_) {
             if (child->focused() && child->visible() && child->can_focus()) {
