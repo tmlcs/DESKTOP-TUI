@@ -168,15 +168,14 @@ public:
         }
     }
 
-    // Center text in a region
-    void write_center(int y, const std::string& text, int width, const Style& style) {
+    // Center text in a region (relative to base_x)
+    void write_center(int base_x, int y, const std::string& text, int width, const Style& style) {
         int display_len = static_cast<int>(text.size());
         if (display_len >= width) {
-            // Text too wide, truncate and write at left of region
-            write(0, y, text.substr(0, static_cast<size_t>(std::max(0, width))), style);
+            write(base_x, y, text.substr(0, static_cast<size_t>(std::max(0, width))), style);
             return;
         }
-        int start_x = (width - display_len) / 2;
+        int start_x = base_x + (width - display_len) / 2;
         write(start_x, y, text, style);
     }
 

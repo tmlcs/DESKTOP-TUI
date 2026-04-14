@@ -18,11 +18,15 @@ class PosixTerminal : public ITerminal {
 public:
     PosixTerminal() : cols_(80), rows_(24), raw_mode_(false), alt_screen_(false), resize_pending_(false) {
         g_active_terminal = this;
+        // Initialize orig_termios_ to safe defaults
+        memset(&orig_termios_, 0, sizeof(orig_termios_));
+        tcgetattr(STDIN_FILENO, &orig_termios_);
         detect_capabilities();
         update_size();
     }
 
     ~PosixTerminal() override {
+        if (g_active_terminal == this) g_active_terminal = nullptr;
         if (raw_mode_) leave_raw_mode();
         if (alt_screen_) leave_alternate_screen();
         cursor_show();
@@ -181,7 +185,7 @@ public:
 
     void enter_raw_mode() override {
         if (raw_mode_) return;
-        tcgetattr(STDIN_FILENO, &orig_termios_);
+        if (tcgetattr(STDIN_FILENO, &orig_termios_) != 0) return; // failed — don't set raw_mode_
         struct termios raw = orig_termios_;
         raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
         raw.c_oflag &= ~(OPOST);
@@ -286,6 +290,8 @@ private:
         if (len > 2) buf[len - 1] = 'm'; // replace last ';' with 'm'
         else buf[len++] = '0', buf[len++] = 'm';
 
+        // Clamp len to buffer bounds before writing
+        if (len > (int)sizeof(buf)) len = (int)sizeof(buf) - 1;
         buf[len] = '\0';
         write_raw(std::string(buf, len));
     }

@@ -74,8 +74,9 @@ public:
         auto it = std::find_if(windows_.begin(), windows_.end(),
             [win](const auto& w) { return w.get() == win; });
         if (it != windows_.end()) {
+            auto ptr = std::move(*it);
             windows_.erase(it);
-            windows_.push_back(*it);
+            windows_.push_back(std::move(ptr));
             update_z_order();
         }
     }

@@ -5,66 +5,42 @@
 #include <vector>
 #include <sstream>
 #include <algorithm>
-#include <codecvt>
-#include <locale>
+#include <cstdint>
 
 namespace tui {
 
-/// Split a string by delimiter
-inline std::vector<std::string> split(const std::string& s, char delim) {
-    std::vector<std::string> result;
-    std::stringstream ss(s);
-    std::string item;
-    while (std::getline(ss, item, delim)) {
-        result.push_back(item);
+/// Decode a single UTF-8 codepoint from the given pointer.
+/// Advances `p` past the consumed bytes. Returns 0 on invalid input.
+inline char32_t utf8_decode(const char*& p, const char* end) {
+    if (p >= end) return 0;
+    unsigned char b0 = static_cast<unsigned char>(*p);
+    if (b0 < 0x80) { p++; return b0; }
+    if (b0 < 0xC0) { p++; return 0; } // continuation byte alone
+    int extra = 0;
+    if (b0 < 0xE0) { extra = 1; b0 &= 0x1F; }
+    else if (b0 < 0xF0) { extra = 2; b0 &= 0x0F; }
+    else { extra = 3; b0 &= 0x07; }
+    char32_t cp = b0;
+    for (int i = 0; i < extra; i++) {
+        p++;
+        if (p > end) return 0;
+        unsigned char b = static_cast<unsigned char>(*p);
+        if ((b & 0xC0) != 0x80) return 0;
+        cp = (cp << 6) | (b & 0x3F);
     }
-    return result;
-}
-
-/// Trim whitespace from both ends
-inline std::string trim(const std::string& s) {
-    auto start = s.begin();
-    while (start != s.end() && std::isspace(*start)) start++;
-    auto end = s.end();
-    do { end--; } while (std::distance(start, end) > 0 && std::isspace(*end));
-    return std::string(start, end + 1);
-}
-
-/// Pad or truncate string to given width
-inline std::string pad(const std::string& s, size_t width, char fill = ' ') {
-    if (s.size() >= width) return s.substr(0, width);
-    return s + std::string(width - s.size(), fill);
-}
-
-/// Center text within given width
-inline std::string center(const std::string& s, size_t width, char fill = ' ') {
-    if (s.size() >= width) return s.substr(0, width);
-    size_t padding = width - s.size();
-    size_t left = padding / 2;
-    size_t right = padding - left;
-    return std::string(left, fill) + s + std::string(right, fill);
-}
-
-/// Right-align text within given width
-inline std::string right_align(const std::string& s, size_t width, char fill = ' ') {
-    if (s.size() >= width) return s.substr(0, width);
-    return std::string(width - s.size(), fill) + s;
-}
-
-/// Repeat a string n times
-inline std::string repeat(const std::string& s, size_t n) {
-    std::string result;
-    for (size_t i = 0; i < n; i++) result += s;
-    return result;
+    p++;
+    return cp;
 }
 
 /// Count visible display width of a UTF-8 string
 /// Handles CJK wide characters (which take 2 cells)
 inline size_t display_width(const std::string& utf8_str) {
-    std::wstring_convert<std::codecvt_utf8_utf16<char32_t>, char32_t> converter;
-    auto str = converter.from_bytes(utf8_str);
+    const char* p = utf8_str.data();
+    const char* end = p + utf8_str.size();
     size_t width = 0;
-    for (char32_t ch : str) {
+    while (p < end) {
+        char32_t ch = utf8_decode(p, end);
+        if (ch == 0 && p >= end) break;
         // CJK Unified Ideographs and extensions (most common wide ranges)
         if ((ch >= 0x4E00 && ch <= 0x9FFF) ||    // CJK Unified Ideographs
             (ch >= 0x3400 && ch <= 0x4DBF) ||     // CJK Extension A
@@ -93,12 +69,87 @@ inline size_t display_width(const std::string& utf8_str) {
     return width;
 }
 
-/// Truncate UTF-8 string to display width
+/// Truncate UTF-8 string to display width (UTF-8 aware)
 inline std::string truncate(const std::string& utf8_str, size_t max_width) {
-    std::wstring_convert<std::codecvt_utf8_utf16<char32_t>, char32_t> converter;
-    auto str = converter.from_bytes(utf8_str);
-    if (str.size() <= max_width) return utf8_str;
-    return converter.to_bytes(str.substr(0, max_width));
+    size_t dw = display_width(utf8_str);
+    if (dw <= max_width) return utf8_str;
+
+    const char* p = utf8_str.data();
+    const char* end = p + utf8_str.size();
+    size_t width = 0;
+    const char* cut = p;
+    while (p < end) {
+        const char* before = p;
+        char32_t ch = utf8_decode(p, end);
+        if (ch == 0 && p >= end) break;
+        int ch_width = 0;
+        if ((ch >= 0x4E00 && ch <= 0x9FFF) || (ch >= 0x3400 && ch <= 0x4DBF) ||
+            (ch >= 0x20000 && ch <= 0x2CEAF) || (ch >= 0xF900 && ch <= 0xFAFF) ||
+            (ch >= 0x2F800 && ch <= 0x2FA1F) || (ch >= 0xAC00 && ch <= 0xD7AF) ||
+            (ch >= 0x1100 && ch <= 0x115F) || (ch >= 0x3040 && ch <= 0x30FF) ||
+            (ch >= 0xFF01 && ch <= 0xFF60) || (ch >= 0xFFE0 && ch <= 0xFFE6)) {
+            ch_width = 2;
+        } else if (ch < 0x20 || ch == 0x7F) {
+            ch_width = 0;
+        } else {
+            ch_width = 1;
+        }
+        if (width + ch_width > max_width) break;
+        width += ch_width;
+        cut = p;
+    }
+    return utf8_str.substr(0, static_cast<size_t>(cut - utf8_str.data()));
+}
+
+/// Split a string by delimiter
+inline std::vector<std::string> split(const std::string& s, char delim) {
+    std::vector<std::string> result;
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        result.push_back(item);
+    }
+    return result;
+}
+
+/// Trim whitespace from both ends
+inline std::string trim(const std::string& s) {
+    if (s.empty()) return s;
+    auto start = s.begin();
+    while (start != s.end() && std::isspace(static_cast<unsigned char>(*start))) start++;
+    if (start == s.end()) return "";
+    auto end = s.end();
+    do { end--; } while (start != end && std::isspace(static_cast<unsigned char>(*end)));
+    return std::string(start, end + 1);
+}
+
+/// Pad or truncate string to given width
+inline std::string pad(const std::string& s, size_t width, char fill = ' ') {
+    if (s.size() >= width) return s.substr(0, width);
+    return s + std::string(width - s.size(), fill);
+}
+
+/// Center text within given width
+inline std::string center(const std::string& s, size_t width, char fill = ' ') {
+    if (s.size() >= width) return s.substr(0, width);
+    size_t padding = width - s.size();
+    size_t left = padding / 2;
+    size_t right = padding - left;
+    return std::string(left, fill) + s + std::string(right, fill);
+}
+
+/// Right-align text within given width
+inline std::string right_align(const std::string& s, size_t width, char fill = ' ') {
+    if (s.size() >= width) return s.substr(0, width);
+    return std::string(width - s.size(), fill) + s;
+}
+
+/// Repeat a string n times
+inline std::string repeat(const std::string& s, size_t n) {
+    std::string result;
+    result.reserve(s.size() * n);
+    for (size_t i = 0; i < n; i++) result += s;
+    return result;
 }
 
 /// Replace all occurrences of 'from' with 'to'

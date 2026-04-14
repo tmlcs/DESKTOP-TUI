@@ -121,11 +121,19 @@ public:
 
     void fill(int x, int y, int w, int h, char ch, const Style& style) override {
         if (!supports_vt_) {
-            // Use FillConsoleOutputCharacter for non-VT mode
             COORD pos = {(SHORT)x, (SHORT)y};
             DWORD written;
+            // Map Style to Windows console attributes
+            WORD attr = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE; // default white
+            if (style.fg.mode == Color::Mode::TrueColor) {
+                if (style.fg.rgb.r > 128) attr |= FOREGROUND_RED;
+                if (style.fg.rgb.g > 128) attr |= FOREGROUND_GREEN;
+                if (style.fg.rgb.b > 128) attr |= FOREGROUND_BLUE;
+            }
+            if (style.bold) attr |= FOREGROUND_INTENSITY;
             for (int row = 0; row < h; row++) {
                 FillConsoleOutputCharacterA(hOut_, ch, w, pos, &written);
+                FillConsoleOutputAttribute(hOut_, attr, w, pos, &written);
                 pos.Y++;
             }
             return;
@@ -141,7 +149,10 @@ public:
     }
 
     void draw_hline(int x, int y, int w, const Style& style) override {
-        std::string line(w, supports_vt_ ? '\xe2\x94\x80' : '-');
+        const char* hline = supports_vt_ ? "\xe2\x94\x80" : "-";
+        std::string line;
+        line.reserve(supports_vt_ ? w * 3 : w);
+        for (int i = 0; i < w; i++) line += hline;
         write_styled_at(x, y, line, style);
     }
 
@@ -256,7 +267,9 @@ private:
         if (style.dim)       buf[len++] = '2', buf[len++] = ';';
         if (style.italic)    buf[len++] = '3', buf[len++] = ';';
         if (style.underline) buf[len++] = '4', buf[len++] = ';';
+        if (style.blink)     buf[len++] = '5', buf[len++] = ';';
         if (style.reverse)   buf[len++] = '7', buf[len++] = ';';
+        if (style.hidden)    buf[len++] = '8', buf[len++] = ';';
 
         if (style.fg.mode == Color::Mode::TrueColor) {
             len += snprintf(buf + len, sizeof(buf) - len, "38;2;%d;%d;%d;",

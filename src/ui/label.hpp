@@ -42,10 +42,10 @@ public:
                     r.write(bounds_.x, y, line, style_);
                     break;
                 case Center:
-                    r.write_center(y, line, bounds_.w, style_);
+                    r.write_center(bounds_.x, y, line, bounds_.w, style_);
                     break;
                 case Right:
-                    r.write_right(bounds_.x + bounds_.w - 1, y, line, bounds_.w, style_);
+                    r.write_right(bounds_.x, y, line, bounds_.w, style_);
                     break;
             }
         }

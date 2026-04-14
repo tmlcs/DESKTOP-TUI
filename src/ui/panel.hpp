@@ -63,11 +63,15 @@ public:
             }
         }
 
-        // Render children
+        // Render children (clipped to content area)
         Rect inner = content_area();
         for (auto& child : children_) {
             if (child->visible()) {
-                child->render(r);
+                Rect cb = child->bounds();
+                // Check if child overlaps the content area at all
+                if (cb.intersects(inner)) {
+                    child->render(r);
+                }
             }
         }
     }

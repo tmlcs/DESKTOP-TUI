@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-04-14
+
+### Fixed
+
+- **Use-after-free in WindowManager**: `focus_window()` now saves the `shared_ptr` before erasing from vector, preventing iterator dereference after erase (UB/crash on Alt+Tab).
+- **Buffer overflow in terminal style emission**: `emit_style()` now clamps `snprintf` accumulated length before writing to 64-byte stack buffer.
+- **Uninitialized terminal state**: `orig_termios_` is now initialized in the constructor. `tcgetattr` return value is validated in `enter_raw_mode()` — failure prevents raw mode activation. Terminal destructor now clears the global signal handler pointer to prevent dangling access.
+- **`trim()` undefined behavior**: Fixed iterator decrement past `begin()` on empty strings. Added early return and safe loop bounds.
+- **`write_right` coordinate calculation**: Fixed double-addition of `bounds_.w` that placed right-aligned text far off-screen.
+- **`write_center` ignores widget offset**: Now accepts a `base_x` parameter to correctly center text within widgets positioned at non-zero screen coordinates.
+- **Generic platform input blocking**: `has_input()` now returns `false` instead of always `true`, preventing the main loop from blocking indefinitely on `getchar()`.
+- **Panel child clipping**: Children are now checked for intersection with the panel's content area before rendering, preventing overflow into adjacent UI elements.
+- **Deprecated `std::codecvt` removed**: Replaced with a manual UTF-8 decoder (`utf8_decode`). `display_width()` and `truncate()` now operate directly on UTF-8 bytes without deprecated library functions. `truncate()` now correctly compares display width instead of codepoint count.
+- **Windows `draw_hline` garbage output**: Fixed `std::string(w, char)` truncating 3-byte UTF-8 box-drawing character to a single byte. Now concatenates properly like POSIX version.
+- **Windows `fill()` ignores style**: Non-VT mode now applies color attributes via `FillConsoleOutputAttribute`. Bold maps to `FOREGROUND_INTENSITY`.
+- **Windows `emit_style` missing flags**: Added `blink` (5) and `hidden` (8) style attributes to match POSIX implementation.
+- **100% CPU on idle**: Main loop now only renders when input was received or dirty flag is set. Sleeps 100ms during idle instead of spinning at 16ms intervals.
+- **`repeat()` performance**: Added `reserve()` to prevent O(n²) reallocations.
+
 ## [0.1.1] - 2026-04-14
 
 ### Fixed

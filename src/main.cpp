@@ -100,6 +100,7 @@ public:
     // Main event loop
     void run() {
         renderer_.mark_dirty();
+        bool needs_render = true;
 
         while (g_running) {
             // Check for pending resize (signal-driven)
@@ -107,19 +108,24 @@ public:
             if (term_->check_resize(new_cols, new_rows)) {
                 renderer_.resize(new_cols, new_rows);
                 desktop_mgr_.on_resize(new_cols, new_rows);
-                renderer_.mark_dirty();
+                needs_render = true;
             }
 
             // Process all pending input events
+            bool had_input = false;
             while (auto event = poll_input()) {
                 if (!handle_event(*event)) break;
+                had_input = true;
             }
 
-            // Render
-            render();
-
-            // Small sleep to prevent 100% CPU
-            std::this_thread::sleep_for(std::chrono::milliseconds(16)); // ~60fps
+            // Only render if something changed
+            if (had_input || needs_render) {
+                render();
+                needs_render = false;
+            } else {
+                // Sleep longer when idle — TUI doesn't need 60fps updates
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
         }
     }
 
@@ -286,11 +292,11 @@ private:
             std::string hint4 = "Ctrl+Q - Quit";
 
             int mid_y = rows / 2;
-            renderer_.write_center(mid_y - 2, welcome, cols, Styles::Title());
-            renderer_.write_center(mid_y, hint1, cols, Styles::Info());
-            renderer_.write_center(mid_y + 1, hint2, cols, Styles::Info());
-            renderer_.write_center(mid_y + 2, hint3, cols, Styles::Info());
-            renderer_.write_center(mid_y + 4, hint4, cols, Styles::Dim());
+            renderer_.write_center(0, mid_y - 2, welcome, cols, Styles::Title());
+            renderer_.write_center(0, mid_y, hint1, cols, Styles::Info());
+            renderer_.write_center(0, mid_y + 1, hint2, cols, Styles::Info());
+            renderer_.write_center(0, mid_y + 2, hint3, cols, Styles::Info());
+            renderer_.write_center(0, mid_y + 4, hint4, cols, Styles::Dim());
         }
 
         renderer_.flush();

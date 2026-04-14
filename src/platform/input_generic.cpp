@@ -15,9 +15,10 @@ public:
     void shutdown() override {}
 
     bool has_input() override {
-        // Best effort: check if stdin has data
-        // This is platform-dependent, fallback to always-true
-        return true;
+        // Generic terminal can't do non-blocking input reliably.
+        // Return false so the main loop continues with rendering
+        // and only blocks when there's actual data on stdin.
+        return false;
     }
 
     std::optional<Event> poll() override {
