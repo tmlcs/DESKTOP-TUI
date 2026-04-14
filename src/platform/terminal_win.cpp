@@ -185,15 +185,6 @@ public:
         write_styled_at(x + w - 1, y + h - 1, br, style);
     }
 
-    void draw_box(int x, int y, int w, int h, const Style& border_style,
-                  const Style& fill_style) override {
-        if (w < 2 || h < 2) return;
-        draw_rect(x, y, w, h, border_style);
-        for (int row = y + 1; row < y + h - 1; row++)
-            for (int col = x + 1; col < x + w - 1; col++)
-                write_styled_at(col, row, " ", fill_style);
-    }
-
     void enter_raw_mode() override {
         if (raw_mode_) return;
         DWORD mode = 0;
@@ -258,37 +249,7 @@ public:
 
 private:
     void emit_style(const Style& style) {
-        char buf[64];
-        int len = 0;
-        buf[len++] = '\033';
-        buf[len++] = '[';
-
-        if (style.bold)      buf[len++] = '1', buf[len++] = ';';
-        if (style.dim)       buf[len++] = '2', buf[len++] = ';';
-        if (style.italic)    buf[len++] = '3', buf[len++] = ';';
-        if (style.underline) buf[len++] = '4', buf[len++] = ';';
-        if (style.blink)     buf[len++] = '5', buf[len++] = ';';
-        if (style.reverse)   buf[len++] = '7', buf[len++] = ';';
-        if (style.hidden)    buf[len++] = '8', buf[len++] = ';';
-
-        if (style.fg.mode == Color::Mode::TrueColor) {
-            len += snprintf(buf + len, sizeof(buf) - len, "38;2;%d;%d;%d;",
-                           style.fg.rgb.r, style.fg.rgb.g, style.fg.rgb.b);
-        } else if (style.fg.mode == Color::Mode::Indexed) {
-            len += snprintf(buf + len, sizeof(buf) - len, "38;5;%d;", style.fg.index);
-        }
-
-        if (style.bg.mode == Color::Mode::TrueColor) {
-            len += snprintf(buf + len, sizeof(buf) - len, "48;2;%d;%d;%d;",
-                           style.bg.rgb.r, style.bg.rgb.g, style.bg.rgb.b);
-        } else if (style.bg.mode == Color::Mode::Indexed) {
-            len += snprintf(buf + len, sizeof(buf) - len, "48;5;%d;", style.bg.index);
-        }
-
-        if (len > 2) buf[len - 1] = 'm';
-        else buf[len++] = '0', buf[len++] = 'm';
-        buf[len] = '\0';
-        write(std::string(buf, len));
+        write(emit_style_to_string(style));
     }
 
     HANDLE hOut_, hIn_;

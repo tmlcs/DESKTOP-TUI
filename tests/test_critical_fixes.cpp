@@ -229,6 +229,70 @@ void test_c7_eventbus_iterator_safety() {
     TEST("EventBus survives unsubscribe during publish", results.size() == 1 && results[0] == 42);
 }
 
+void test_s3_s6_string_utils_edge_cases() {
+    printf("\n--- S3-S6: string_utils edge cases ---\n");
+    TEST("display_width empty string", tui::display_width("") == 0);
+    TEST("truncate empty", tui::truncate("", 5) == "");
+    TEST("truncate to 0", tui::truncate("hello", 0) == "");
+    TEST("trim all whitespace", tui::trim("   \t\n  ") == "");
+    TEST("split empty string", tui::split("", ',').size() == 0);
+    TEST("word_wrap empty", tui::word_wrap("", 10).size() == 1);
+    TEST("pad empty", tui::pad("", 5) == "     ");
+    TEST("center empty", tui::center("", 5) == "     ");
+    TEST("right_align empty", tui::right_align("", 5) == "     ");
+    TEST("word_wrap single long word exceeds width",
+        []() {
+            auto lines = tui::word_wrap("abcdefghij", 5);
+            // word_wrap can't split single word — it goes on its own line
+            return lines.size() >= 1 && lines.back() == "abcdefghij";
+        }());
+}
+
+void test_d1_emit_style_correctness() {
+    printf("\n--- D1: emit_style_to_string correctness ---\n");
+    TEST("emit_style default style",
+        []() {
+            std::string s = tui::emit_style_to_string(tui::Style::Default());
+            return s == "\033[0m";
+        }());
+    TEST("emit_style bold",
+        []() {
+            tui::Style s = tui::Style::Default();
+            s.bold = true;
+            return tui::emit_style_to_string(s) == "\033[0;1m";
+        }());
+    TEST("emit_style bold+italic",
+        []() {
+            tui::Style s = tui::Style::Default();
+            s.bold = true; s.italic = true;
+            return tui::emit_style_to_string(s) == "\033[0;1;3m";
+        }());
+    TEST("emit_style 256-color fg",
+        []() {
+            tui::Style s = tui::Style::Default();
+            s.fg.mode = tui::Color::Mode::Indexed;
+            s.fg.index = 196;
+            auto result = tui::emit_style_to_string(s);
+            return result.find("38;5;196") != std::string::npos;
+        }());
+    TEST("emit_style truecolor fg",
+        []() {
+            tui::Style s = tui::Style::Default();
+            s.fg.mode = tui::Color::Mode::TrueColor;
+            s.fg.rgb.r = 255; s.fg.rgb.g = 128; s.fg.rgb.b = 64;
+            auto result = tui::emit_style_to_string(s);
+            return result.find("38;2;255;128;64") != std::string::npos;
+        }());
+    TEST("emit_style truecolor bg",
+        []() {
+            tui::Style s = tui::Style::Default();
+            s.bg.mode = tui::Color::Mode::TrueColor;
+            s.bg.rgb.r = 0; s.bg.rgb.g = 100; s.bg.rgb.b = 200;
+            auto result = tui::emit_style_to_string(s);
+            return result.find("48;2;0;100;200") != std::string::npos;
+        }());
+}
+
 int run_critical_fixes_main() {
     int p = 0, f = 0;
     passed = &p;
@@ -246,6 +310,8 @@ int run_critical_fixes_main() {
     test_c6_panel_clipping();
     test_c7_signal_iterator_safety();
     test_c7_eventbus_iterator_safety();
+    test_s3_s6_string_utils_edge_cases();
+    test_d1_emit_style_correctness();
 
     printf("\n=== Results: %d passed, %d failed ===\n\n", p, f);
     return f;

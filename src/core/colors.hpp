@@ -115,6 +115,36 @@ namespace Styles {
     inline Style BorderActive(){ Style s; s.fg = Color::Pal(14); s.bold = true; return s; }
 }
 
+/// DRY: Generate ANSI escape sequence for a Style (shared across all terminals)
+inline std::string emit_style_to_string(const Style& style) {
+    std::string seq = "\033[0"; // reset first
+
+    if (style.bold)      seq += ";1";
+    if (style.dim)       seq += ";2";
+    if (style.italic)    seq += ";3";
+    if (style.underline) seq += ";4";
+    if (style.blink)     seq += ";5";
+    if (style.reverse)   seq += ";7";
+    if (style.hidden)    seq += ";8";
+
+    if (style.fg.mode == Color::Mode::TrueColor) {
+        seq += ";38;2;" + std::to_string(style.fg.rgb.r) + ";" +
+               std::to_string(style.fg.rgb.g) + ";" + std::to_string(style.fg.rgb.b);
+    } else if (style.fg.mode == Color::Mode::Indexed) {
+        seq += ";38;5;" + std::to_string(style.fg.index);
+    }
+
+    if (style.bg.mode == Color::Mode::TrueColor) {
+        seq += ";48;2;" + std::to_string(style.bg.rgb.r) + ";" +
+               std::to_string(style.bg.rgb.g) + ";" + std::to_string(style.bg.rgb.b);
+    } else if (style.bg.mode == Color::Mode::Indexed) {
+        seq += ";48;5;" + std::to_string(style.bg.index);
+    }
+
+    seq += "m";
+    return seq;
+}
+
 } // namespace tui
 
 #endif // TUI_CORE_COLORS_HPP

@@ -68,7 +68,18 @@ public:
     virtual void draw_vline(int x, int y, int h, const Style& style) = 0;
     virtual void draw_rect(int x, int y, int w, int h, const Style& style) = 0;
     virtual void draw_box(int x, int y, int w, int h, const Style& border_style,
-                          const Style& fill_style) = 0;
+                          const Style& fill_style) {
+        // DRY: default implementation using draw_rect + write_styled_at
+        if (w < 2 || h < 2) return;
+        draw_rect(x, y, w, h, border_style);
+        if (w > 2 && h > 2) {
+            for (int row = y + 1; row < y + h - 1; row++) {
+                for (int col = x + 1; col < x + w - 1; col++) {
+                    write_styled_at(col, row, " ", fill_style);
+                }
+            }
+        }
+    }
 
     // Mode control
     virtual void enter_raw_mode() = 0;

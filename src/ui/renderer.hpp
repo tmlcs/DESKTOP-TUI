@@ -297,33 +297,7 @@ public:
 private:
     int bounds_clamp_x(int x) const { return std::max(0, std::min(x, cols_ - 1)); }
     void emit_style(const Style& style) {
-        // Emit ANSI escape sequences for style
-        std::string seq = "\033[0"; // reset first
-
-        if (style.bold)      seq += ";1";
-        if (style.dim)       seq += ";2";
-        if (style.italic)    seq += ";3";
-        if (style.underline) seq += ";4";
-        if (style.blink)     seq += ";5";
-        if (style.reverse)   seq += ";7";
-        if (style.hidden)    seq += ";8";
-
-        if (style.fg.mode == Color::Mode::TrueColor) {
-            seq += ";38;2;" + std::to_string(style.fg.rgb.r) + ";" +
-                   std::to_string(style.fg.rgb.g) + ";" + std::to_string(style.fg.rgb.b);
-        } else if (style.fg.mode == Color::Mode::Indexed) {
-            seq += ";38;5;" + std::to_string(style.fg.index);
-        }
-
-        if (style.bg.mode == Color::Mode::TrueColor) {
-            seq += ";48;2;" + std::to_string(style.bg.rgb.r) + ";" +
-                   std::to_string(style.bg.rgb.g) + ";" + std::to_string(style.bg.rgb.b);
-        } else if (style.bg.mode == Color::Mode::Indexed) {
-            seq += ";48;5;" + std::to_string(style.bg.index);
-        }
-
-        seq += "m";
-        term_.write(seq);
+        term_.write(emit_style_to_string(style));
     }
 
     std::string utf8_encode(char32_t ch) {

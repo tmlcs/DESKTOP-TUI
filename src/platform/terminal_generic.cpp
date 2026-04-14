@@ -96,15 +96,6 @@ public:
         write_styled_at(x + w - 1, y + h - 1, "+", style);
     }
 
-    void draw_box(int x, int y, int w, int h, const Style& border_style,
-                  const Style& fill_style) override {
-        if (w < 2 || h < 2) return;
-        draw_rect(x, y, w, h, border_style);
-        for (int row = y + 1; row < y + h - 1; row++)
-            for (int col = x + 1; col < x + w - 1; col++)
-                write_styled_at(col, row, " ", fill_style);
-    }
-
     void enter_raw_mode() override {
         // Generic terminal can't truly set raw mode
         // Best effort with system() call
@@ -147,18 +138,7 @@ public:
 
 private:
     void emit_style(const Style& style) {
-        char buf[64];
-        int len = 0;
-        buf[len++] = '\033';
-        buf[len++] = '[';
-
-        if (style.bold)      buf[len++] = '1', buf[len++] = ';';
-        if (style.reverse)   buf[len++] = '7', buf[len++] = ';';
-
-        if (len > 2) buf[len - 1] = 'm';
-        else buf[len++] = '0', buf[len++] = 'm';
-        buf[len] = '\0';
-        write(std::string(buf, len));
+        write(emit_style_to_string(style));
     }
 
     int cols_, rows_;

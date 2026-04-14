@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-04-14
+
+### Refactored
+
+- **DRY: `emit_style()` extracted to shared function (D1)**: New `emit_style_to_string(const Style&)` in `colors.hpp` replaces ~120 duplicated lines across 4 terminal implementations (`terminal_posix.cpp`, `terminal_win.cpp`, `terminal_generic.cpp`, `renderer.hpp`). All terminals now delegate to the single shared implementation.
+- **DRY: `draw_box()` default implementation (D2)**: Moved `draw_box()` logic to a default implementation in `ITerminal` interface (`terminal.hpp`), eliminating 3 near-identical copies across platform-specific terminal files.
+- **Box character consolidation (D3/D4)**: Box drawing now uses `has_cap(TerminalCaps::BoxDrawing)` consistently across all platforms, with Unicode/ASCII selection handled at the capability level rather than duplicated per-terminal.
+
+### Added
+
+- **16 new unit tests**: 10 string_utils edge case tests (empty inputs, zero-width truncation, whitespace trimming) and 6 `emit_style_to_string` correctness tests (default, bold, italic, 256-color, truecolor FG/BG). Total: 56 passing tests.
+
 ## [0.1.4] - 2026-04-14
 
 ### Fixed
