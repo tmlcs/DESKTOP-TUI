@@ -8,6 +8,7 @@
 #include "core/event.hpp"
 #include "core/colors.hpp"
 #include "core/string_utils.hpp"
+#include "version.hpp"
 
 #include <iostream>
 #include <memory>
@@ -15,6 +16,7 @@
 #include <thread>
 #include <csignal>
 #include <atomic>
+#include <cstring>
 
 using namespace tui;
 
@@ -366,7 +368,32 @@ private:
     DesktopManager desktop_mgr_;
 };
 
-int main() {
+int main(int argc, char* argv[]) {
+    // Handle --version and --help flags
+    for (int i = 1; i < argc; i++) {
+        if (std::strcmp(argv[i], "--version") == 0 || std::strcmp(argv[i], "-v") == 0) {
+            std::printf("Desktop TUI v%s\n", TUI_VERSION);
+            return 0;
+        }
+        if (std::strcmp(argv[i], "--help") == 0 || std::strcmp(argv[i], "-h") == 0) {
+            std::printf("Usage: desktop-tui [OPTIONS]\n");
+            std::printf("\nA cross-platform multi-desktop TUI written in C++17.\n");
+            std::printf("\nOptions:\n");
+            std::printf("  --version, -v    Show version and exit\n");
+            std::printf("  --help, -h       Show this help and exit\n");
+            std::printf("\nKeybindings:\n");
+            std::printf("  Ctrl+Q           Quit\n");
+            std::printf("  Alt+1..9         Switch to desktop N\n");
+            std::printf("  Alt+Left/Right   Previous/Next desktop\n");
+            std::printf("  Alt+N            New desktop\n");
+            std::printf("  Alt+Tab          Cycle windows\n");
+            std::printf("  Alt+W            Close focused window\n");
+            std::printf("  Alt+R            Restore minimized window\n");
+            std::printf("  Esc              Minimize focused window\n");
+            return 0;
+        }
+    }
+
     TUIShell shell;
 
     if (!shell.init()) {

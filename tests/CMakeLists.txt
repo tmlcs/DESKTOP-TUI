@@ -21,3 +21,11 @@ add_test(NAME string_utils COMMAND test_all --string_utils)
 add_test(NAME renderer COMMAND test_all --renderer)
 add_test(NAME critical_fixes COMMAND test_all)
 add_test(NAME all COMMAND test_all)
+
+# Performance benchmarks (not run as tests — invoke manually)
+add_executable(benchmark benchmark.cpp)
+target_include_directories(benchmark PRIVATE
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/include
+)
+target_link_libraries(benchmark PRIVATE ${CMAKE_THREAD_LIBS_INIT})

@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-04-14
+
+### Added
+
+- **Logger**: New `src/core/logger.hpp` — minimal header-only logger with DEBUG/INFO/WARN/ERROR levels, compile-time level filtering (`TUI_LOG_LEVEL`), timestamps, and thread-safe singleton. Usage: `TUI_LOG(LogLevel::INFO, "Message %d", value)`.
+- **CI/CD pipeline**: `.github/workflows/ci.yml` — builds on Linux (Release, Debug+ASan, Debug+UBSan), macOS, and Windows. Runs test suite with `ctest`. Includes clang-tidy analysis job.
+- **Code formatting**: `.clang-format` — enforces consistent 4-space indentation, 120-char line limit, attached braces, left-aligned pointers.
+- **Linting**: `.clang-tidy` — enables bugprone, modernize, performance, and readability checks with project-specific exclusions.
+- **Performance benchmarks**: `tests/benchmark.cpp` — measures display_width, truncate, renderer write, full-frame render, and emit_style throughput. Run: `./tests/benchmark`.
+- **`--version` / `--help` flags**: `desktop-tui --version` prints version; `desktop-tui --help` shows usage and keybindings.
+
+### Changed
+
+- **`.gitignore`**: Added `.qwen/` to exclude AI tool review artifacts from version control.
+
 ## [0.1.5] - 2026-04-14
 
 ### Refactored

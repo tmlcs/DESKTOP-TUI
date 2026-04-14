@@ -41,3 +41,6 @@ CTestTestfile.cmake
 # Misc
 *.log
 *.tmp
+
+# AI tool artifacts
+.qwen/

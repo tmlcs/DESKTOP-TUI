@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        config:
+          - { type: Release, asan: OFF, ubsan: OFF }
+          - { type: Debug,   asan: ON,  ubsan: OFF }
+          - { type: Debug,   asan: OFF, ubsan: ON }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y g++ cmake
+      - name: Configure
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=${{ matrix.config.type }} \
+            -DENABLE_TESTS=ON \
+            -DENABLE_ASAN=${{ matrix.config.asan }} \
+            -DENABLE_UBSAN=${{ matrix.config.ubsan }} \
+            -DCMAKE_CXX_FLAGS="-Werror"
+      - name: Build
+        run: cmake --build build -j$(nproc)
+      - name: Test
+        run: cd build && ctest --output-on-failure
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=ON
+      - name: Build
+        run: cmake --build build -j$(sysctl -n hw.ncpu)
+      - name: Test
+        run: cd build && ctest --output-on-failure
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -B build -DENABLE_TESTS=ON
+      - name: Build
+        run: cmake --build build --config Release
+      - name: Test
+        run: cd build && ctest -C Release --output-on-failure
+
+  clang-tidy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y clang-tidy g++ cmake
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CLANG_TIDY="clang-tidy"
+      - name: Build
+        run: cmake --build build -j$(nproc) || true  # Warnings only, don't fail

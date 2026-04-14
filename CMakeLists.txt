@@ -28,6 +28,7 @@ set(CORE_SOURCES
     src/core/rect.hpp
     src/core/colors.hpp
     src/core/string_utils.hpp
+    src/core/logger.hpp
 )
 
 # Platform sources
