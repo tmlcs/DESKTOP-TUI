@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-04-14
+
+### Fixed
+
+- **Renderer bounds checking**: `clear_region()` and `fill_rect()` now clamp loop ranges with `std::max(0, ...)` / `std::min(cols_, ...)` eliminating unnecessary iterations over negative coordinates.
+- **UTF-8 safe window titles**: Window title rendering now uses `display_width()` and `truncate()` for proper Unicode handling. Long CJK titles no longer break centering or get truncated mid-character.
+- **Desktop resize propagation**: `Desktop::on_resize()` now repositions off-screen windows when terminal size changes. `DesktopManager::on_resize()` calls both desktop and window level resize handlers.
+- **Mouse scroll wheel support**: SGR 1006 mouse parser now detects scroll wheel events (button >= 64) and emits `EventType::MouseScroll` with proper `scroll_delta` values for up/down/left/right.
+- **EOF handling**: When stdin returns 0 bytes (terminal closed), input now emits `EventType::Quit` instead of silently returning `std::nullopt`.
+- **Idle CPU reduction**: Main loop idle sleep reduced from 100ms to 50ms for more responsive input wake-ups.
+
+### Added
+
+- **`mark_dirty(Rect)`**: Renderer now supports marking specific regions dirty instead of full-screen redraw, enabling targeted re-rendering optimization.
+- **Unit test framework**: 40 tests covering `string_utils` (display_width, truncate, trim, split, pad/center/right_align) and `renderer` (bounds checking for put, write, fill_rect, clear_region, draw_box, write_right, write_center, mark_dirty_rect).
+- **CMake test support**: `ENABLE_TESTS` option to build unit tests. `ENABLE_ASAN` and `ENABLE_UBSAN` options for sanitizer builds.
+- **Version header generation**: `version.hpp.in` template auto-generates `TUI_VERSION`, `TUI_VERSION_MAJOR`, `TUI_VERSION_MINOR`, `TUI_VERSION_PATCH` macros at build time.
+- **`install()` target**: `make install` now installs binary to `CMAKE_INSTALL_PREFIX/bin`.
+
+### Changed
+
+- **Style documentation**: Added `static_assert` and comment documenting that `Style` is single-threaded only (bitfields share storage).
+
 ## [0.1.2] - 2026-04-14
 
 ### Fixed

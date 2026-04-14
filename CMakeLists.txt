@@ -108,3 +108,32 @@ endif()
 
 # Install
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
+
+# --- Options ---
+option(ENABLE_TESTS "Build unit tests" OFF)
+option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
+option(ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer" OFF)
+
+# Sanitizers
+if(ENABLE_ASAN)
+    add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address)
+endif()
+if(ENABLE_UBSAN)
+    add_compile_options(-fsanitize=undefined -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=undefined)
+endif()
+
+# Generate version header
+configure_file(
+    ${CMAKE_SOURCE_DIR}/include/version.hpp.in
+    ${CMAKE_BINARY_DIR}/generated/version.hpp
+    @ONLY
+)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/generated)
+
+# Unit tests
+if(ENABLE_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

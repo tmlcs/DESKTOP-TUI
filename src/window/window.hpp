@@ -4,6 +4,7 @@
 #include "core/rect.hpp"
 #include "core/event.hpp"
 #include "core/colors.hpp"
+#include "core/string_utils.hpp"
 #include "ui/widget.hpp"
 #include "ui/panel.hpp"
 #include <string>
@@ -72,8 +73,14 @@ public:
 
             // Title
             if (bounds_.w > 4) {
+                // Truncate title to fit width (UTF-8 safe)
                 std::string title = " " + title_ + " ";
-                int title_x = bounds_.x + (bounds_.w - static_cast<int>(title.size())) / 2;
+                int max_w = bounds_.w - 2; // leave margins
+                if (static_cast<int>(tui::display_width(title)) > max_w) {
+                    title = tui::truncate(title, static_cast<size_t>(max_w));
+                }
+                int title_dw = static_cast<int>(tui::display_width(title));
+                int title_x = bounds_.x + (bounds_.w - title_dw) / 2;
                 r.write(title_x, bounds_.y, title, Styles::Title());
             }
         }

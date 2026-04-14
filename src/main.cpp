@@ -123,8 +123,8 @@ public:
                 render();
                 needs_render = false;
             } else {
-                // Sleep longer when idle — TUI doesn't need 60fps updates
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                // Sleep when idle — 50ms gives ~20fps wake-up for input checks
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
             }
         }
     }

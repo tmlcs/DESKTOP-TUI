@@ -1,0 +1,13 @@
+#ifndef TUI_VERSION_HPP
+#define TUI_VERSION_HPP
+
+#define TUI_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define TUI_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define TUI_VERSION_PATCH @PROJECT_VERSION_PATCH@
+#define TUI_VERSION "@PROJECT_VERSION@"
+
+namespace tui {
+    inline const char* version() { return TUI_VERSION; }
+}
+
+#endif // TUI_VERSION_HPP

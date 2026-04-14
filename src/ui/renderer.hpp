@@ -55,11 +55,13 @@ public:
 
     // Clear a region in the back buffer
     void clear_region(int x, int y, int w, int h) {
-        for (int row = y; row < y + h && row < rows_; row++) {
-            for (int col = x; col < x + w && col < cols_; col++) {
-                if (col >= 0 && row >= 0) {
-                    back_buffer_[row * cols_ + col] = Cell(' ', Style::Default());
-                }
+        int x0 = std::max(0, x);
+        int y0 = std::max(0, y);
+        int x1 = std::min(cols_, x + w);
+        int y1 = std::min(rows_, y + h);
+        for (int row = y0; row < y1; row++) {
+            for (int col = x0; col < x1; col++) {
+                back_buffer_[row * cols_ + col] = Cell(' ', Style::Default());
             }
         }
         dirty_ = true;
@@ -72,6 +74,7 @@ public:
 
     // Write styled text at position
     void write(int x, int y, const std::string& text, const Style& style) {
+        if (y >= rows_ || y < -1000) return; // completely off-screen
         int col = x;
         int row = y;
         for (char c : text) {
@@ -102,11 +105,13 @@ public:
 
     // Fill a rectangle in the back buffer
     void fill_rect(int x, int y, int w, int h, char32_t ch, const Style& style) {
-        for (int row = y; row < y + h && row < rows_; row++) {
-            for (int col = x; col < x + w && col < cols_; col++) {
-                if (col >= 0 && row >= 0) {
-                    back_buffer_[row * cols_ + col] = Cell(ch, style);
-                }
+        int x0 = std::max(0, x);
+        int y0 = std::max(0, y);
+        int x1 = std::min(cols_, x + w);
+        int y1 = std::min(rows_, y + h);
+        for (int row = y0; row < y1; row++) {
+            for (int col = x0; col < x1; col++) {
+                back_buffer_[row * cols_ + col] = Cell(ch, style);
             }
         }
         dirty_ = true;
@@ -262,6 +267,20 @@ public:
 
     // Mark entire screen dirty
     void mark_dirty() { dirty_ = true; }
+
+    // Mark specific region dirty (optimized: only those rows need redraw)
+    void mark_dirty(int x, int y, int w, int h) {
+        // Clamp to bounds and mark the rows
+        int y0 = std::max(0, y);
+        int y1 = std::min(rows_, y + h);
+        for (int row = y0; row < y1; row++) {
+            // Force row dirty by zeroing front buffer for that row
+            for (int col = 0; col < cols_; col++) {
+                front_buffer_[row * cols_ + col] = Cell(); // different from back => dirty
+            }
+        }
+        dirty_ = true;
+    }
 
     int cols() const { return cols_; }
     int rows() const { return rows_; }

@@ -95,6 +95,10 @@ struct Style {
     bool operator!=(const Style& o) const { return !(*this == o); }
 };
 
+// Style is a small value type. Not thread-safe for concurrent mutation
+// (bitfields share storage). Single-threaded TUI rendering only.
+static_assert(sizeof(Style) <= 24, "Style should remain compact");
+
 /// Predefined styles
 namespace Styles {
     inline Style Normal()        { return Style::Default(); }

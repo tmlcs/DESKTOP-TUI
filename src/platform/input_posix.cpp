@@ -66,7 +66,12 @@ public:
 
         unsigned char buf[32];
         ssize_t n = read(STDIN_FILENO, buf, sizeof(buf));
-        if (n <= 0) return std::nullopt;
+        if (n == 0) {
+            // EOF — terminal closed, signal quit
+            Event e(EventType::Quit);
+            return e;
+        }
+        if (n < 0) return std::nullopt; // error or no data
 
         // Try to parse; if incomplete, buffer the bytes
         buffer_.assign(buf, buf + n);
@@ -177,8 +182,19 @@ private:
                 mouse_y_ = y - 1;
 
                 if (last == 'M') {
-                    e.type = EventType::MouseDown;
-                    e.mouse_button = button & 3;
+                    // Scroll wheel: buttons 64=up, 65=down, 66=left, 67=right
+                    if (button >= 64 && button <= 67) {
+                        e.type = EventType::MouseScroll;
+                        switch (button) {
+                            case 64: e.scroll_delta = -1; break; // scroll up
+                            case 65: e.scroll_delta = 1; break;  // scroll down
+                            case 66: e.scroll_delta = -2; break; // scroll left
+                            case 67: e.scroll_delta = 2; break;  // scroll right
+                        }
+                    } else {
+                        e.type = EventType::MouseDown;
+                        e.mouse_button = button & 3;
+                    }
                     e.mods.shift = button & 4;
                     e.mods.meta = button & 8;
                     e.mods.control = button & 16;

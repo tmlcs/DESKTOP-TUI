@@ -80,6 +80,17 @@ public:
         }
     }
 
+    // Notify all windows of a resize
+    void on_resize(int cols, int rows) {
+        for (auto& win : windows_) {
+            // Reposition windows that would be off-screen
+            Rect b = win->bounds();
+            if (b.x + b.w > cols) b.x = std::max(0, cols - b.w);
+            if (b.y + b.h > rows) b.y = std::max(0, rows - b.h);
+            win->set_bounds(b);
+        }
+    }
+
 private:
     void cleanup_stale_windows() {
         // No-op since we own the shared_ptrs, but kept for API consistency

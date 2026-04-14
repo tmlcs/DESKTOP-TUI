@@ -174,6 +174,7 @@ public:
     // Resize
     void on_resize(int cols, int rows) {
         for (auto& d : desktops_) {
+            d->on_resize(cols, rows);
             for (auto& win : d->windows()) {
                 win->on_resize(cols, rows);
             }
