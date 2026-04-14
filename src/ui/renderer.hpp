@@ -4,6 +4,7 @@
 #include "platform/terminal.hpp"
 #include "core/colors.hpp"
 #include "core/rect.hpp"
+#include "core/string_utils.hpp"
 #include <vector>
 #include <string>
 #include <memory>
@@ -77,15 +78,22 @@ public:
         if (y >= rows_ || y < -1000) return; // completely off-screen
         int col = x;
         int row = y;
-        for (char c : text) {
-            if (c == '\n') {
+
+        // FIX C1: decode UTF-8 by codepoint, not byte-by-byte
+        const char* p = text.data();
+        const char* end = p + text.size();
+        while (p < end) {
+            char32_t ch = utf8_decode(p, end);
+            if (ch == 0 && p >= end) break;
+
+            if (ch == '\n') {
                 col = x;
                 row++;
                 continue;
             }
             if (col >= 0 && row >= 0 && col < cols_ && row < rows_) {
                 Cell& cell = back_buffer_[row * cols_ + col];
-                cell.ch = static_cast<char32_t>(static_cast<unsigned char>(c));
+                cell.ch = ch;
                 cell.style = style;
                 dirty_ = true;
             }
@@ -205,7 +213,7 @@ public:
         // per-row dirty rects and use cursor positioning optimization)
         term_.cursor_hide();
 
-        Style current_style;
+        Style current_style = Style::Default();
         bool style_set = false;
 
         for (int row = 0; row < rows_; row++) {
@@ -269,7 +277,7 @@ public:
     void mark_dirty() { dirty_ = true; }
 
     // Mark specific region dirty (optimized: only those rows need redraw)
-    void mark_dirty(int x, int y, int w, int h) {
+    void mark_dirty(int /*x*/, int y, int /*w*/, int h) {
         // Clamp to bounds and mark the rows
         int y0 = std::max(0, y);
         int y1 = std::min(rows_, y + h);

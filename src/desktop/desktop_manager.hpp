@@ -19,12 +19,16 @@ public:
     DesktopManager() {
         // Create initial desktop
         add_desktop("Desktop 1");
+        // FIX C2: activate first desktop so app works on launch
+        switch_to(0);
     }
 
     explicit DesktopManager(int initial_count) {
         for (int i = 0; i < initial_count; i++) {
             add_desktop("Desktop " + std::to_string(i + 1));
         }
+        // FIX C2: activate first desktop so app works on launch
+        switch_to(0);
     }
 
     // Add a new desktop
@@ -44,16 +48,28 @@ public:
         auto it = std::find_if(desktops_.begin(), desktops_.end(),
             [id](const auto& d) { return d->id() == id; });
         if (it != desktops_.end()) {
+            int removed_index = static_cast<int>(std::distance(desktops_.begin(), it));
             auto* active = active_desktop();
+            if (!active) return;  // safety guard
+
             // Move windows to active desktop
             for (auto& win : (*it)->windows()) {
                 active->add_window(win);
             }
             desktops_.erase(it);
-            // Fix active index if needed
-            if (active_index_ >= static_cast<int>(desktops_.size())) {
-                active_index_ = static_cast<int>(desktops_.size()) - 1;
+
+            // FIX C3/C4: update active_index_ and active_ pointer correctly
+            if (removed_index < active_index_) {
+                // Desktop before active was removed — shift active_index down
+                active_index_--;
+                // active_ still valid (same object, different index)
+            } else if (removed_index == active_index_) {
+                // The active desktop was removed — point to replacement
+                active_index_ = std::min(active_index_, static_cast<int>(desktops_.size()) - 1);
+                active_ = desktops_[active_index_].get();
+                active_->set_active(true);
             }
+            // else: desktop after active was removed — no change needed
         }
     }
 

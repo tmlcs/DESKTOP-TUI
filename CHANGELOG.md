@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-04-14
+
+### Fixed
+
+- **DesktopManager initializes active desktop (C2)**: Both constructors now call `switch_to(0)` after creating desktops, ensuring the app works correctly on launch. Previously `active_` was null until the user pressed Alt+1..9 or Alt+arrows.
+- **remove_desktop() index corruption (C3)**: Removing a desktop before the active one now correctly decrements `active_index_`, preventing the indicator from highlighting the wrong dot.
+- **remove_desktop() dangling pointer (C4)**: Removing the active desktop now updates the `active_` pointer to the desktop that replaces it, preventing crash on subsequent `active_desktop()` dereference.
+- **UTF-8 corruption in Renderer::write() (C1)**: Text rendering now iterates by UTF-8 codepoint using `utf8_decode()` instead of byte-by-byte, preventing multi-byte character corruption during flush.
+- **UTF-8 corruption in pad/center/right_align (C1)**: String alignment functions now use `display_width()` instead of `s.size()` for padding calculations, preventing mid-codepoint truncation.
+- **UTF-8 corruption in word_wrap (C1)**: Word wrapping now measures line width using `display_width()` instead of byte count.
+- **UTF-8 corruption in List widget (C1)**: List item truncation now uses `truncate()` with display width instead of `substr()` with byte count.
+- **UTF-8 corruption in Panel title (C1)**: Panel title centering now uses `display_width()` for position calculation.
+- **Escape key permanently loses window (C5)**: Added `Alt+R` keybinding to restore the most recently minimized window.
+- **Panel renders children without clipping (C6)**: Child widgets are now checked against the panel's content area using `Rect::intersection()` before rendering, preventing overflow into adjacent UI elements.
+- **Signal/EventBus iterator invalidation (C7)**: `Signal::emit()` and `EventBus::publish()` now snapshot their handler lists before iterating, preventing crashes if a callback disconnects itself during dispatch.
+- **Compiler warning: uninitialized current_style**: `Renderer::flush()` now initializes `current_style` to `Style::Default()`.
+- **Compiler warning: unused mark_dirty params**: Unused `x` and `w` parameters in `mark_dirty(x,y,w,h)` are now properly commented out.
+- **Compiler warning: unused variable in truncate()**: Removed unused `before` variable from `truncate()`.
+
+### Removed
+
+- **Dead code removal (C8)**: Removed `WindowManager` (160 lines), `EventBus` class from `event.hpp` (45 lines), and `Signal` class from `signal.hpp` (45 lines). These were never instantiated and added maintenance burden.
+- **Removed WindowManager files from build**: `window_manager.hpp` and `window_manager.cpp` deleted from source tree and CMakeLists.txt.
+
+### Added
+
+- **18 new unit tests** covering DesktopManager initialization, remove_desktop() correctness, UTF-8 rendering, pad/center/right_align display width, word_wrap, List truncation, Panel clipping, Signal/EventBus iterator safety, and Alt+R restore keybinding. Total: 40 passing tests.
+
 ## [0.1.3] - 2026-04-14
 
 ### Fixed

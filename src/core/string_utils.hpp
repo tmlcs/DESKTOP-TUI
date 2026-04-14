@@ -79,7 +79,6 @@ inline std::string truncate(const std::string& utf8_str, size_t max_width) {
     size_t width = 0;
     const char* cut = p;
     while (p < end) {
-        const char* before = p;
         char32_t ch = utf8_decode(p, end);
         if (ch == 0 && p >= end) break;
         int ch_width = 0;
@@ -123,25 +122,28 @@ inline std::string trim(const std::string& s) {
     return std::string(start, end + 1);
 }
 
-/// Pad or truncate string to given width
+/// Pad or truncate string to given display width
 inline std::string pad(const std::string& s, size_t width, char fill = ' ') {
-    if (s.size() >= width) return s.substr(0, width);
-    return s + std::string(width - s.size(), fill);
+    size_t dw = display_width(s);
+    if (dw >= width) return truncate(s, width);
+    return s + std::string(width - dw, fill);
 }
 
-/// Center text within given width
+/// Center text within given display width
 inline std::string center(const std::string& s, size_t width, char fill = ' ') {
-    if (s.size() >= width) return s.substr(0, width);
-    size_t padding = width - s.size();
+    size_t dw = display_width(s);
+    if (dw >= width) return truncate(s, width);
+    size_t padding = width - dw;
     size_t left = padding / 2;
     size_t right = padding - left;
     return std::string(left, fill) + s + std::string(right, fill);
 }
 
-/// Right-align text within given width
+/// Right-align text within given display width
 inline std::string right_align(const std::string& s, size_t width, char fill = ' ') {
-    if (s.size() >= width) return s.substr(0, width);
-    return std::string(width - s.size(), fill) + s;
+    size_t dw = display_width(s);
+    if (dw >= width) return truncate(s, width);
+    return std::string(width - dw, fill) + s;
 }
 
 /// Repeat a string n times
@@ -179,20 +181,29 @@ std::string to_str(T val) {
     return std::to_string(val);
 }
 
-/// Wrap text to multiple lines at given width
+/// Wrap text to multiple lines at given display width
 inline std::vector<std::string> word_wrap(const std::string& text, size_t width) {
     std::vector<std::string> lines;
     std::string line;
+    size_t line_dw = 0;  // line display width
+
     std::istringstream stream(text);
     std::string word;
     while (stream >> word) {
-        if (line.empty()) {
-            line = word;
-        } else if (line.size() + 1 + word.size() <= width) {
-            line += " " + word;
+        size_t word_dw = display_width(word);
+        size_t sep_dw = line.empty() ? 0 : 1;
+
+        if (line_dw + sep_dw + word_dw <= width) {
+            if (!line.empty()) {
+                line += " ";
+                line_dw += sep_dw;
+            }
+            line += word;
+            line_dw += word_dw;
         } else {
             lines.push_back(line);
             line = word;
+            line_dw = word_dw;
         }
     }
     if (!line.empty()) lines.push_back(line);

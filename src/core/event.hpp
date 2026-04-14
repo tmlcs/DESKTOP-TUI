@@ -128,13 +128,17 @@ public:
     void publish(const Event& event) {
         auto it = handlers_.find(event.type);
         if (it != handlers_.end()) {
-            for (const auto& [id, handler] : it->second) {
+            // FIX C7: snapshot to prevent iterator invalidation
+            auto snapshot = it->second;
+            for (const auto& [id, handler] : snapshot) {
                 handler(event);
             }
         }
         // Also publish to wildcard handlers
         if (!wildcard_handlers_.empty()) {
-            for (const auto& handler : wildcard_handlers_) {
+            // FIX C7: snapshot wildcard handlers too
+            auto snapshot = wildcard_handlers_;
+            for (const auto& handler : snapshot) {
                 handler.callback(event);
             }
         }

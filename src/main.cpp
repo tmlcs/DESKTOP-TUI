@@ -5,7 +5,6 @@
 #include "ui/label.hpp"
 #include "ui/list.hpp"
 #include "desktop/desktop_manager.hpp"
-#include "window/window_manager.hpp"
 #include "core/event.hpp"
 #include "core/colors.hpp"
 #include "core/string_utils.hpp"
@@ -217,6 +216,21 @@ private:
                     for (auto& win : active->windows()) {
                         if (win->is_focused()) {
                             win->minimize();
+                            break;
+                        }
+                    }
+                }
+                return true;
+            }
+
+            // FIX C5: Alt+R restore minimized windows
+            if (e.mods.alt && (e.key_code == 'R' || e.key_code == 'r')) {
+                auto* active = desktop_mgr_.active_desktop();
+                if (active) {
+                    for (auto& win : active->windows()) {
+                        if (win->is_minimized()) {
+                            win->restore();
+                            win->focus();
                             break;
                         }
                     }

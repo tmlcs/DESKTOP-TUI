@@ -55,23 +55,26 @@ public:
 
         if (show_border_) {
             r.draw_box(bounds_, border_style_, fill_style_);
-            // Title
+            // FIX C1: Title with UTF-8 safe centering
             if (!title_.empty() && bounds_.w > 4) {
+                size_t title_dw = display_width(title_);
+                int title_total = static_cast<int>(title_dw) + 2;  // " " + title + " "
+                int title_x = bounds_.x + (bounds_.w - title_total) / 2;
                 std::string title_display = " " + title_ + " ";
-                r.write(bounds_.x + (bounds_.w - static_cast<int>(title_display.size())) / 2,
-                        bounds_.y, title_display, Styles::Header());
+                if (title_x < bounds_.x) title_x = bounds_.x;
+                r.write(title_x, bounds_.y, title_display, Styles::Header());
             }
         }
 
-        // Render children (clipped to content area)
+        // FIX C6: Render children clipped to content area
         Rect inner = content_area();
         for (auto& child : children_) {
-            if (child->visible()) {
-                Rect cb = child->bounds();
-                // Check if child overlaps the content area at all
-                if (cb.intersects(inner)) {
-                    child->render(r);
-                }
+            if (!child->visible()) continue;
+            Rect cb = child->bounds();
+            // Only render if child intersects the content area
+            auto clipped = inner.intersection(cb);
+            if (clipped.has_value() && !clipped->empty()) {
+                child->render(r);
             }
         }
     }

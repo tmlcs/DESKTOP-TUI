@@ -77,8 +77,6 @@ set(DESKTOP_SOURCES
 set(WINDOW_SOURCES
     src/window/window.hpp
     src/window/window.cpp
-    src/window/window_manager.hpp
-    src/window/window_manager.cpp
 )
 
 # Main

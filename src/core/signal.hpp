@@ -23,13 +23,15 @@ public:
     void disconnect(SlotId id) {
         slots_.erase(
             std::remove_if(slots_.begin(), slots_.end(),
-                [id](const auto& s) { return s.first == id; }),
+                [id](const auto& s) { return s.id == id; }),
             slots_.end()
         );
     }
 
     void emit(Args... args) const {
-        for (const auto& [id, cb] : slots_) {
+        // FIX C7: snapshot to prevent iterator invalidation if callback disconnects
+        auto snapshot = slots_;
+        for (const auto& [id, cb] : snapshot) {
             cb(args...);
         }
     }

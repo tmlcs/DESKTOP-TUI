@@ -44,8 +44,9 @@ public:
             }
 
             std::string display = items_[item_idx];
-            if (static_cast<int>(display.size()) > bounds_.w) {
-                display = display.substr(0, bounds_.w);
+            // FIX C1: truncate by display width, not byte count
+            if (static_cast<int>(display_width(display)) > bounds_.w) {
+                display = truncate(display, bounds_.w);
             }
 
             r.write(bounds_.x, bounds_.y + i, display, item_style);
