@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-04-15
+
+### Fixed
+
+- **Renderer CJK column tracking (C1)**: Wide characters (CJK, Hangul, etc.) now advance the render column by their display width (2) instead of always incrementing by 1, preventing visual overlap corruption. Wide characters also clear the second buffer cell to prevent garbage display. Line wrapping triggers when a character would extend past the terminal edge.
+- **CJK range inconsistency (S4)**: Extracted shared `is_wide_codepoint()` function used by both `display_width()` and `truncate()`, eliminating gaps where codepoints in CJK Extension ranges were treated differently between the two functions (~40 lines of duplicated range checks consolidated).
+
+### Changed
+
+- **Desktop::windows() returns const reference (S1)**: Eliminated per-frame `std::vector` copy in hot paths (render loop, input dispatch, window cycling). No API change for callers — range-for iteration works identically.
+
 ## [0.2.1] - 2026-04-15
 
 ### Fixed
