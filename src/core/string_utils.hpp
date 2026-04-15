@@ -23,7 +23,7 @@ inline char32_t utf8_decode(const char*& p, const char* end) {
     char32_t cp = b0;
     for (int i = 0; i < extra; i++) {
         p++;
-        if (p > end) return 0;
+        if (p >= end) return 0;
         unsigned char b = static_cast<unsigned char>(*p);
         if ((b & 0xC0) != 0x80) return 0;
         cp = (cp << 6) | (b & 0x3F);

@@ -293,6 +293,46 @@ void test_d1_emit_style_correctness() {
         }());
 }
 
+void test_c5_utf8_decode_boundary() {
+    printf("\n--- C5: utf8_decode boundary safety ---\n");
+
+    TEST("truncated 3-byte UTF-8 returns 0",
+        []() {
+            const char buf[] = "\xE6\x97";  // "日" sin último byte
+            const char* p = buf;
+            const char* end = buf + 2;
+            char32_t result = tui::utf8_decode(p, end);
+            return result == 0;
+        }());
+
+    TEST("truncated 2-byte UTF-8 returns 0",
+        []() {
+            const char buf[] = "\xC2";  // Start of 2-byte, no continuation
+            const char* p = buf;
+            const char* end = buf + 1;
+            char32_t result = tui::utf8_decode(p, end);
+            return result == 0;
+        }());
+
+    TEST("valid 3-byte UTF-8 decodes correctly",
+        []() {
+            const char buf[] = "\xE6\x97\xA5";  // 日
+            const char* p = buf;
+            const char* end = buf + 3;
+            char32_t result = tui::utf8_decode(p, end);
+            return result == 0x65E5;
+        }());
+
+    TEST("decode at exact empty boundary returns 0",
+        []() {
+            const char buf[] = "";
+            const char* p = buf;
+            const char* end = buf;
+            char32_t result = tui::utf8_decode(p, end);
+            return result == 0;
+        }());
+}
+
 int run_critical_fixes_main() {
     int p = 0, f = 0;
     passed = &p;
@@ -302,6 +342,7 @@ int run_critical_fixes_main() {
 
     test_c2_desktop_manager_init();
     test_c3_c4_remove_desktop();
+    test_c5_utf8_decode_boundary();
     test_c1_utf8_write();
     test_c1_utf8_pad_center_right_align();
     test_c1_utf8_word_wrap();
