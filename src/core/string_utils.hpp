@@ -32,6 +32,26 @@ inline char32_t utf8_decode(const char*& p, const char* end) {
     return cp;
 }
 
+/// Check if a codepoint has display width 2 (CJK, Hangul, etc.)
+inline bool is_wide_codepoint(char32_t ch) {
+    return (ch >= 0x4E00 && ch <= 0x9FFF) ||    // CJK Unified Ideographs
+           (ch >= 0x3400 && ch <= 0x4DBF) ||     // CJK Extension A
+           (ch >= 0x20000 && ch <= 0x2A6DF) ||   // CJK Extension B
+           (ch >= 0x2A700 && ch <= 0x2B73F) ||   // CJK Extension C
+           (ch >= 0x2B740 && ch <= 0x2B81F) ||   // CJK Extension D
+           (ch >= 0x2B820 && ch <= 0x2CEAF) ||   // CJK Extension E
+           (ch >= 0xF900 && ch <= 0xFAFF) ||     // CJK Compatibility Ideographs
+           (ch >= 0x2F800 && ch <= 0x2FA1F) ||   // CJK Compatibility Supplement
+           (ch >= 0xAC00 && ch <= 0xD7AF) ||     // Hangul Syllables
+           (ch >= 0x1100 && ch <= 0x115F) ||     // Hangul Jamo
+           (ch >= 0x3040 && ch <= 0x309F) ||     // Hiragana
+           (ch >= 0x30A0 && ch <= 0x30FF) ||     // Katakana
+           (ch >= 0xFF01 && ch <= 0xFF60) ||     // Fullwidth ASCII
+           (ch >= 0xFFE0 && ch <= 0xFFE6) ||     // Fullwidth symbols
+           (ch >= 0x2E80 && ch <= 0x2EFF) ||     // CJK Radicals
+           (ch >= 0x31C0 && ch <= 0x31EF);       // CJK Strokes
+}
+
 /// Count visible display width of a UTF-8 string
 /// Handles CJK wide characters (which take 2 cells)
 inline size_t display_width(const std::string& utf8_str) {
@@ -41,23 +61,7 @@ inline size_t display_width(const std::string& utf8_str) {
     while (p < end) {
         char32_t ch = utf8_decode(p, end);
         if (ch == 0 && p >= end) break;
-        // CJK Unified Ideographs and extensions (most common wide ranges)
-        if ((ch >= 0x4E00 && ch <= 0x9FFF) ||    // CJK Unified Ideographs
-            (ch >= 0x3400 && ch <= 0x4DBF) ||     // CJK Extension A
-            (ch >= 0x20000 && ch <= 0x2A6DF) ||   // CJK Extension B
-            (ch >= 0x2A700 && ch <= 0x2B73F) ||   // CJK Extension C
-            (ch >= 0x2B740 && ch <= 0x2B81F) ||   // CJK Extension D
-            (ch >= 0x2B820 && ch <= 0x2CEAF) ||   // CJK Extension E
-            (ch >= 0xF900 && ch <= 0xFAFF) ||     // CJK Compatibility Ideographs
-            (ch >= 0x2F800 && ch <= 0x2FA1F) ||   // CJK Compatibility Ideographs Supplement
-            (ch >= 0xAC00 && ch <= 0xD7AF) ||     // Hangul Syllables
-            (ch >= 0x1100 && ch <= 0x115F) ||     // Hangul Jamo
-            (ch >= 0x3040 && ch <= 0x309F) ||     // Hiragana
-            (ch >= 0x30A0 && ch <= 0x30FF) ||     // Katakana
-            (ch >= 0xFF01 && ch <= 0xFF60) ||     // Fullwidth ASCII
-            (ch >= 0xFFE0 && ch <= 0xFFE6) ||     // Fullwidth symbols
-            (ch >= 0x2E80 && ch <= 0x2EFF) ||     // CJK Radicals
-            (ch >= 0x31C0 && ch <= 0x31EF)) {     // CJK Strokes
+        if (is_wide_codepoint(ch)) {
             width += 2;
         } else if (ch < 0x20 || ch == 0x7F) {
             // Control characters: 0 width
@@ -82,11 +86,7 @@ inline std::string truncate(const std::string& utf8_str, size_t max_width) {
         char32_t ch = utf8_decode(p, end);
         if (ch == 0 && p >= end) break;
         int ch_width = 0;
-        if ((ch >= 0x4E00 && ch <= 0x9FFF) || (ch >= 0x3400 && ch <= 0x4DBF) ||
-            (ch >= 0x20000 && ch <= 0x2CEAF) || (ch >= 0xF900 && ch <= 0xFAFF) ||
-            (ch >= 0x2F800 && ch <= 0x2FA1F) || (ch >= 0xAC00 && ch <= 0xD7AF) ||
-            (ch >= 0x1100 && ch <= 0x115F) || (ch >= 0x3040 && ch <= 0x30FF) ||
-            (ch >= 0xFF01 && ch <= 0xFF60) || (ch >= 0xFFE0 && ch <= 0xFFE6)) {
+        if (is_wide_codepoint(ch)) {
             ch_width = 2;
         } else if (ch < 0x20 || ch == 0x7F) {
             ch_width = 0;
