@@ -49,7 +49,7 @@ public:
     }
 
     // Get windows on this desktop (only valid/alive windows)
-    std::vector<std::shared_ptr<Window>> windows() {
+    const std::vector<std::shared_ptr<Window>>& windows() {
         cleanup_stale_windows();
         return windows_;
     }
