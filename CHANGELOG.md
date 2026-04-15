@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-04-15
+
+### Fixed
+
+- **utf8_decode boundary check (C5)**: Changed `p > end` to `p >= end` in the continuation byte loop of `utf8_decode()` to prevent reading past buffer when UTF-8 sequences are truncated at exact byte boundary. Added 4 unit tests for truncated 2-byte, truncated 3-byte, valid 3-byte, and empty boundary cases.
+- **Windows SetConsoleMode double call (C6)**: Combined two `SetConsoleMode()` calls in `enter_raw_mode()` into a single call with unified flags, preventing the second call from overwriting the raw mode configuration with mouse-only flags.
+- **Windows flush no-op (C7)**: Added `fflush(stdout)` to `WindowsTerminal::flush()` to ensure output appears on screen in non-VT mode.
+
 ## [0.2.0] - 2026-04-14
 
 ### Added
