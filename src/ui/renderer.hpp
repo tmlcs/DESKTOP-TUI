@@ -79,7 +79,6 @@ public:
         int col = x;
         int row = y;
 
-        // FIX C1: decode UTF-8 by codepoint, not byte-by-byte
         const char* p = text.data();
         const char* end = p + text.size();
         while (p < end) {
@@ -91,13 +90,38 @@ public:
                 row++;
                 continue;
             }
+
+            // Determine display width for column advancement
+            int cell_width = 0;
+            if (ch < 0x20 || ch == 0x7F) {
+                cell_width = 0;  // Control chars: no display width
+            } else if (is_wide_codepoint(ch)) {
+                cell_width = 2;  // CJK/wide: 2 terminal cells
+            } else {
+                cell_width = 1;  // Normal: 1 cell
+            }
+
+            // Write to the primary cell if within bounds
             if (col >= 0 && row >= 0 && col < cols_ && row < rows_) {
                 Cell& cell = back_buffer_[row * cols_ + col];
                 cell.ch = ch;
                 cell.style = style;
                 dirty_ = true;
+                // Clear the second cell for wide characters to prevent garbage
+                if (cell_width == 2 && col + 1 < cols_) {
+                    Cell& cell2 = back_buffer_[row * cols_ + col + 1];
+                    cell2.ch = ' ';
+                    cell2.style = style;
+                }
             }
-            col++;
+
+            col += cell_width;
+
+            // Handle line wrap if character extends past end
+            if (col >= cols_) {
+                col = x;
+                row++;
+            }
         }
     }
 
@@ -183,9 +207,9 @@ public:
 
     // Center text in a region (relative to base_x)
     void write_center(int base_x, int y, const std::string& text, int width, const Style& style) {
-        int display_len = static_cast<int>(text.size());
+        int display_len = static_cast<int>(display_width(text));
         if (display_len >= width) {
-            write(base_x, y, text.substr(0, static_cast<size_t>(std::max(0, width))), style);
+            write(base_x, y, truncate(text, width), style);
             return;
         }
         int start_x = base_x + (width - display_len) / 2;
@@ -194,11 +218,11 @@ public:
 
     // Right-align text within a region
     void write_right(int x, int y, const std::string& text, int max_width, const Style& style) {
-        int display_len = static_cast<int>(text.size());
+        int display_len = static_cast<int>(display_width(text));
         int available = std::max(0, max_width);
         if (display_len >= available) {
             // Text too wide, truncate
-            write(x, y, text.substr(0, static_cast<size_t>(available)), style);
+            write(x, y, truncate(text, available), style);
             return;
         }
         int start_x = x + max_width - display_len;

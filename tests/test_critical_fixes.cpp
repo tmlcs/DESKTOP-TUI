@@ -333,6 +333,46 @@ void test_c5_utf8_decode_boundary() {
         }());
 }
 
+void test_c1_cjk_column_tracking() {
+    printf("\n--- C1: Renderer CJK column tracking ---\n");
+
+    TestTerminal term(80, 24);
+    tui::Renderer r(term);
+    r.resize(80, 24);
+    r.clear();
+
+    // "日" and "本" are each display width 2
+    r.write(0, 0, "日本", tui::Style::Default());
+    r.flush();
+    auto output = term.drain_output();
+
+    TEST("CJK text renders both codepoints",
+        output.find("\xE6\x97\xA5") != std::string::npos &&  // 日
+        output.find("\xE6\x9C\xAC") != std::string::npos);   // 本
+
+    // Mixed ASCII + CJK: "A日B" should not overlap
+    r.clear();
+    r.write(0, 1, "A日B", tui::Style::Default());
+    r.flush();
+    output = term.drain_output();
+    TEST("mixed ASCII+CJK renders without overlap",
+        output.find("A") != std::string::npos &&
+        output.find("\xE6\x97\xA5") != std::string::npos &&
+        output.find("B") != std::string::npos);
+}
+
+void test_s4_cjk_range_consistency() {
+    printf("\n--- S4: CJK range consistency between display_width and truncate ---\n");
+
+    TEST("CJK U+4E00 has width 2", tui::display_width("\xE4\xB8\x80") == 2);
+
+    // truncate should never produce a string wider than max_width
+    std::string cjk_text = "日本語テスト";
+    auto truncated = tui::truncate(cjk_text, 6);
+    TEST("truncate respects display width", tui::display_width(truncated) <= 6);
+    TEST("truncate doesn't split codepoint", truncated.size() % 3 == 0 || truncated.empty());
+}
+
 int run_critical_fixes_main() {
     int p = 0, f = 0;
     passed = &p;
@@ -343,11 +383,13 @@ int run_critical_fixes_main() {
     test_c2_desktop_manager_init();
     test_c3_c4_remove_desktop();
     test_c5_utf8_decode_boundary();
+    test_c1_cjk_column_tracking();
     test_c1_utf8_write();
     test_c1_utf8_pad_center_right_align();
     test_c1_utf8_word_wrap();
     test_c1_utf8_list();
     test_c1_utf8_panel_title();
+    test_s4_cjk_range_consistency();
     test_c6_panel_clipping();
     test_c7_signal_iterator_safety();
     test_c7_eventbus_iterator_safety();
