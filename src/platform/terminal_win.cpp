@@ -58,7 +58,7 @@ public:
         }
     }
 
-    void flush() override { /* stdout is unbuffered in raw mode */ }
+    void flush() override { fflush(stdout); }
     void sync() override { flush(); }
 
     void cursor_hide() override {
@@ -190,21 +190,18 @@ public:
         DWORD mode = 0;
         GetConsoleMode(hIn_, &mode);
         orig_input_mode_ = mode;
-        // Enable window input, disable line input and echo
-        SetConsoleMode(hIn_, mode & ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT | ENABLE_PROCESSED_INPUT));
+        // Combine raw mode flags with window/mouse input in a single call
+        SetConsoleMode(hIn_,
+            (mode & ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT | ENABLE_PROCESSED_INPUT))
+            | ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT);
 
-        // Set stdout to not translate newlines
         GetConsoleMode(hOut_, &mode);
         orig_output_mode_ = mode;
         if (supports_vt_) {
             SetConsoleMode(hOut_, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING | ENABLE_PROCESSED_OUTPUT);
         }
 
-        // Enable mouse
         if (supports_vt_) write("\033[?1006;1000;1015;2004h");
-
-        // Enable quick edit mode for mouse
-        SetConsoleMode(hIn_, ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT);
         raw_mode_ = true;
     }
 
