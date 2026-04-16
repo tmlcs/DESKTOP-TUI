@@ -8,6 +8,13 @@
 namespace tui {
 
 /// Lightweight signal/slot for UI events (simpler than EventBus, for direct connections)
+/// 
+/// @note THREAD SAFETY: This class is NOT thread-safe. It is designed for single-threaded
+///       TUI event loops only. Do not call connect(), disconnect(), or emit() from multiple
+///       threads concurrently without external synchronization.
+///       
+///       The snapshot pattern used in emit() prevents iterator invalidation when callbacks
+///       modify the slot list, but does NOT provide cross-thread safety.
 template<typename... Args>
 class Signal {
 public:

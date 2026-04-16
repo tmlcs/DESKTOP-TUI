@@ -24,6 +24,16 @@ struct Cell {
 };
 
 /// Double-buffered renderer with dirty-region optimization
+/// 
+/// @note THREAD SAFETY: This class is NOT thread-safe. It is designed for single-threaded
+///       TUI rendering only. All write(), clear(), flush(), and other mutation operations
+///       must occur on the main UI thread.
+///       
+///       The renderer uses internal buffers (front_buffer_, back_buffer_) that are not
+///       protected by locks. Concurrent access from multiple threads will cause data races
+///       and undefined behavior.
+///       
+///       Typical usage: All rendering happens in the main loop after event processing.
 class Renderer {
 public:
     Renderer(ITerminal& term) : term_(term) {}

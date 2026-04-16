@@ -15,7 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **List UTF-8 truncation test (C1)**: Fixed failing test `test_c1_utf8_list()` that was checking rendered output incorrectly. The test now directly verifies `truncate()` function behavior instead of relying on terminal mock output capture, which doesn't properly handle UTF-8 byte sequences in the mock.
 
-## [0.2.3] - 2026-04-16
+## [0.2.5] - 2026-04-16
+
+### Documentation
+
+- **Thread-safety limitations documented**: Added comprehensive `@note THREAD SAFETY` documentation to all core classes (`Signal`, `EventBus`, `Renderer`, `Style`). Clarifies that these components are designed for single-threaded TUI event loops only and are NOT thread-safe. Explains the snapshot pattern prevents iterator invalidation but does NOT provide cross-thread safety. Documents bitfield sharing concerns in `Style` struct.
+
+## [0.2.4] - 2026-04-16
 
 ### Fixed
 

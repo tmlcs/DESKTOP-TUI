@@ -104,7 +104,16 @@ namespace Keys {
 // Event handler type
 using EventHandler = std::function<void(const Event&)>;
 
-// Event bus
+/// Event bus for publish/subscribe messaging in the TUI system
+/// 
+/// @note THREAD SAFETY: This class is NOT thread-safe. It is designed for single-threaded
+///       TUI event loops only. Do not call subscribe(), unsubscribe(), or publish() from
+///       multiple threads concurrently without external synchronization.
+///       
+///       The snapshot pattern used in publish() prevents iterator invalidation when handlers
+///       modify subscriptions, but does NOT provide cross-thread safety.
+///       
+///       All event handling should occur on the main UI thread.
 class EventBus {
 public:
     using SubscriptionId = uint64_t;
