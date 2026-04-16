@@ -2,6 +2,7 @@
 // Uses termios raw mode + stdin reading
 
 #include "input.hpp"
+#include "core/config.hpp"
 #include <cstdio>
 #include <unistd.h>
 #include <fcntl.h>
@@ -14,9 +15,9 @@ namespace tui {
 class PosixInput : public IInput {
 public:
     PosixInput() : mouse_x_(0), mouse_y_(0) {
-        // Initialize with reasonable buffer capacity limit (64KB max)
-        buffer_.reserve(1024);
-        max_buffer_size_ = 65536; // 64KB limit to prevent DoS
+        // Initialize with reasonable buffer capacity limit (configurable max)
+        buffer_.reserve(Config::INPUT_BUFFER_INITIAL_RESERVE);
+        max_buffer_size_ = Config::MAX_INPUT_BUFFER_SIZE; // Prevent DoS attacks
     }
 
     bool init() override {
@@ -175,6 +176,58 @@ private:
     std::optional<Event> try_parse_csi() {
         // Minimum CSI: ESC [ X  = 3 bytes
         if (buffer_.size() < 3) return std::nullopt;
+
+        // SEC-01: Handle bracketed paste (ESC [ 2 0 0 ~ starts paste, ESC [ 2 0 1 ~ ends)
+        // We treat all content between these markers as raw text, not commands
+        if (buffer_.size() >= 6 && buffer_[2] == '2' && buffer_[3] == '0') {
+            // Check for start (200~) or end (201~) of bracketed paste
+            if (buffer_.size() >= 7 && buffer_[4] == '0' && buffer_[5] == '~') {
+                // Start of bracketed paste: ESC[200~
+                // Clear buffer and mark that we're in paste mode
+                buffer_.erase(buffer_.begin(), buffer_.begin() + 6);
+                in_bracketed_paste_ = true;
+                return std::nullopt; // Consume the sequence, wait for paste content
+            }
+            if (buffer_.size() >= 7 && buffer_[4] == '1' && buffer_[5] == '~') {
+                // End of bracketed paste: ESC[201~
+                buffer_.erase(buffer_.begin(), buffer_.begin() + 6);
+                in_bracketed_paste_ = false;
+                return std::nullopt; // Consume the sequence
+            }
+        }
+
+        // If we're inside bracketed paste, treat all input as raw text
+        if (in_bracketed_paste_) {
+            // Look for the end sequence ESC[201~
+            size_t end_pos = 0;
+            bool found_end = false;
+            for (size_t i = 0; i + 6 <= buffer_.size(); i++) {
+                if (buffer_[i] == '\033' && buffer_[i+1] == '[' &&
+                    buffer_[i+2] == '2' && buffer_[i+3] == '0' &&
+                    buffer_[i+4] == '1' && buffer_[i+5] == '~') {
+                    end_pos = i;
+                    found_end = true;
+                    break;
+                }
+            }
+            
+            if (found_end) {
+                // Extract paste content (everything before ESC[201~)
+                std::string paste_content(buffer_.begin(), buffer_.begin() + static_cast<ptrdiff_t>(end_pos));
+                // Remove the entire sequence including end marker
+                buffer_.erase(buffer_.begin(), buffer_.begin() + static_cast<ptrdiff_t>(end_pos) + 6);
+                
+                // Create a custom event with the paste content
+                Event e(EventType::Custom);
+                e.data_s = paste_content;
+                e.key_name = "BracketedPaste";
+                in_bracketed_paste_ = false;
+                return e;
+            } else {
+                // Incomplete paste - wait for more data
+                return std::nullopt;
+            }
+        }
 
         // SGR 1006 mouse: ESC [ < button ; x ; y M/m
         if (buffer_.size() >= 4 && buffer_[2] == '<') {
@@ -336,6 +389,7 @@ private:
     std::vector<unsigned char> buffer_;
     size_t max_buffer_size_;
     int mouse_x_, mouse_y_;
+    bool in_bracketed_paste_ = false;  // SEC-01: Track bracketed paste state
 };
 
 IInput* create_input() {

@@ -8,6 +8,7 @@
 #include "core/event.hpp"
 #include "core/colors.hpp"
 #include "core/string_utils.hpp"
+#include "core/config.hpp"
 #include "version.hpp"
 
 #include <iostream>
@@ -34,7 +35,7 @@ public:
         : term_(create_terminal()),
           input_(create_input()),
           renderer_(*term_),
-          desktop_mgr_(3)  // Start with 3 desktops
+          desktop_mgr_(Config::DEFAULT_DESKTOP_COUNT)  // Start with configured default desktops
     {}
 
     ~TUIShell() {
@@ -124,8 +125,8 @@ public:
                 render();
                 needs_render = false;
             } else {
-                // Sleep when idle — 50ms gives ~20fps wake-up for input checks
-                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                // Sleep when idle — configured duration gives ~20fps wake-up for input checks
+                std::this_thread::sleep_for(Config::IDLE_SLEEP_DURATION);
             }
         }
     }
