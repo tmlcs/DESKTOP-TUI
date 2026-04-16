@@ -31,6 +31,11 @@ public:
     }
 
     void remove_child(Widget* child) {
+        // SEC-03: Blur the child before removing to prevent dangling focus
+        if (child && child->focused()) {
+            child->blur();
+        }
+        
         children_.erase(
             std::remove_if(children_.begin(), children_.end(),
                 [child](const auto& c) { return c.get() == child; }),
@@ -38,7 +43,15 @@ public:
         );
     }
 
-    void clear_children() { children_.clear(); }
+    void clear_children() {
+        // SEC-03: Blur all focused children before clearing
+        for (auto& child : children_) {
+            if (child && child->focused()) {
+                child->blur();
+            }
+        }
+        children_.clear();
+    }
 
     const std::vector<std::shared_ptr<Widget>>& children() const { return children_; }
 

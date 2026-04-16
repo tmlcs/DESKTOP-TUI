@@ -213,7 +213,32 @@ public:
     }
 
     void set_title(const std::string& title) override {
-        write("\033]0;" + title + "\007");
+        // SEC-02: Sanitize title to prevent escape sequence injection
+        // Remove or replace control characters that could be used for attacks
+        std::string sanitized;
+        sanitized.reserve(title.size());
+        for (char c : title) {
+            // Allow printable ASCII and UTF-8 continuation bytes
+            // Block: ESC (0x1B), BEL (0x07), CR (0x0D), and other control chars
+            if (c == '\033' || c == '\007' || c == '\r' || (c >= 0 && c < 32 && c != '\t')) {
+                // Replace dangerous characters with space or skip them
+                if (c == '\033') {
+                    // Skip ESC and any following sequence
+                    continue;
+                } else if (c == '\007' || c == '\r') {
+                    sanitized += ' ';  // Replace with space
+                } else {
+                    // Skip other control characters
+                    continue;
+                }
+            } else {
+                sanitized += c;
+            }
+        }
+        
+        // Write the sanitized title using OSC sequence
+        // OSC 0 ; title BEL - Set icon name and window title
+        write("\033]0;" + sanitized + "\007");
     }
 
     TerminalCaps caps() const override { return caps_; }

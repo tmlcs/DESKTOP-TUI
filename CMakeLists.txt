@@ -64,6 +64,8 @@ set(UI_SOURCES
     src/ui/label.hpp
     src/ui/border.hpp
     src/ui/list.hpp
+    src/ui/text_input.hpp
+    src/ui/text_input.cpp
 )
 
 # Desktop sources
