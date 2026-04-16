@@ -13,7 +13,11 @@ namespace tui {
 
 class PosixInput : public IInput {
 public:
-    PosixInput() : mouse_x_(0), mouse_y_(0) {}
+    PosixInput() : mouse_x_(0), mouse_y_(0) {
+        // Initialize with reasonable buffer capacity limit (64KB max)
+        buffer_.reserve(1024);
+        max_buffer_size_ = 65536; // 64KB limit to prevent DoS
+    }
 
     bool init() override {
         // Set stdin to non-blocking
@@ -39,11 +43,24 @@ public:
     std::optional<Event> poll() override {
         // If we have buffered bytes from a previous partial read, try to complete them
         if (!buffer_.empty()) {
+            // Check buffer limit before reading more (prevent DoS)
+            if (buffer_.size() >= max_buffer_size_) {
+                // Buffer overflow - discard oldest data and start fresh
+                buffer_.clear();
+                Event e(EventType::KeyPress);
+                e.key_code = Keys::Escape;
+                e.key_name = "Escape";
+                return e;
+            }
+            
             // Try to read more to complete the sequence
             unsigned char more[16];
             ssize_t n = read(STDIN_FILENO, more, sizeof(more));
             if (n > 0) {
-                buffer_.insert(buffer_.end(), more, more + n);
+                // Ensure we don't exceed max buffer size
+                size_t available = max_buffer_size_ - buffer_.size();
+                size_t to_copy = (size_t)n < available ? (size_t)n : available;
+                buffer_.insert(buffer_.end(), more, more + to_copy);
             }
             // Try to parse the buffer
             auto result = try_parse_buffer();
@@ -317,6 +334,7 @@ private:
     }
 
     std::vector<unsigned char> buffer_;
+    size_t max_buffer_size_;
     int mouse_x_, mouse_y_;
 };
 

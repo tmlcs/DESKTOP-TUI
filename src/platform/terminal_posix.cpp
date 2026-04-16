@@ -18,9 +18,13 @@ class PosixTerminal : public ITerminal {
 public:
     PosixTerminal() : cols_(80), rows_(24), raw_mode_(false), alt_screen_(false), resize_pending_(false) {
         g_active_terminal = this;
-        // Initialize orig_termios_ to safe defaults
+        // Initialize orig_termios_ to safe defaults and capture current state
         memset(&orig_termios_, 0, sizeof(orig_termios_));
-        tcgetattr(STDIN_FILENO, &orig_termios_);
+        if (tcgetattr(STDIN_FILENO, &orig_termios_) != 0) {
+            // Failed to get terminal attributes - this might not be a terminal
+            // Set safe defaults to avoid undefined behavior
+            cfmakeraw(&orig_termios_);
+        }
         detect_capabilities();
         update_size();
     }
