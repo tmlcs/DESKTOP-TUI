@@ -74,6 +74,7 @@ inline size_t display_width(const std::string& utf8_str) {
 }
 
 /// Truncate UTF-8 string to display width (UTF-8 aware)
+/// Safely handles CJK wide characters and avoids cutting mid-codepoint
 inline std::string truncate(const std::string& utf8_str, size_t max_width) {
     size_t dw = display_width(utf8_str);
     if (dw <= max_width) return utf8_str;
@@ -83,6 +84,7 @@ inline std::string truncate(const std::string& utf8_str, size_t max_width) {
     size_t width = 0;
     const char* cut = p;
     while (p < end) {
+        const char* prev_p = p; // Save position before decoding
         char32_t ch = utf8_decode(p, end);
         if (ch == 0 && p >= end) break;
         int ch_width = 0;
@@ -95,8 +97,21 @@ inline std::string truncate(const std::string& utf8_str, size_t max_width) {
         }
         if (width + ch_width > max_width) break;
         width += ch_width;
-        cut = p;
+        cut = p; // cut points to the next byte after this complete codepoint
     }
+    
+    // Ensure we don't cut in the middle of a multi-byte UTF-8 sequence
+    // If cut is not at a valid UTF-8 boundary, move it back
+    while (cut > utf8_str.data()) {
+        unsigned char c = static_cast<unsigned char>(*cut);
+        // Continuation bytes are 10xxxxxx (0x80-0xBF)
+        if ((c & 0xC0) == 0x80) {
+            cut--; // Move back to find the start of the codepoint
+        } else {
+            break; // Found a valid UTF-8 start byte or ASCII
+        }
+    }
+    
     return utf8_str.substr(0, static_cast<size_t>(cut - utf8_str.data()));
 }
 

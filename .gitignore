@@ -1,46 +1,42 @@
-# Build
-build/
-cmake-build-*/
+```
+# Compiled and build artifacts
 *.o
-*.so
+*.obj
 *.a
-*.dylib
+*.so
 *.dll
 *.exe
-CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
-Makefile
-*.cmake
+build/
+dist/
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-*.sublime-*
-.project
-.settings/
-.classpath
+# Dependencies
+venv/
+.venv/
+__pycache__/
+.mypy_cache/
+.pytest_cache/
+node_modules/
 
-# OS
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# Compilers
-*.orig
-*.rej
-*.patch
-
-# Testing
-Testing/
-CTestTestfile.cmake
-
-# Misc
+# Logs and temp files
 *.log
 *.tmp
+*.swp
 
-# AI tool artifacts
-.qwen/
+# Editors
+.vscode/
+.idea/
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# System
+.DS_Store
+Thumbs.db
+```
