@@ -57,6 +57,14 @@ struct Color {
 };
 
 /// Text styling attributes
+/// 
+/// @note THREAD SAFETY: This struct uses bitfields which share storage. While copying
+///       a Style is safe, concurrent modification of the same Style instance from multiple
+///       threads is NOT safe. The bitfield implementation means that writing to one field
+///       (e.g., bold) could theoretically affect adjacent bitfields in a data race scenario.
+///       
+///       Always use value semantics (copy Styles) rather than shared mutable references
+///       when working across thread boundaries. For single-threaded TUI usage, this is not a concern.
 struct Style {
     Color fg;
     Color bg;
@@ -95,8 +103,7 @@ struct Style {
     bool operator!=(const Style& o) const { return !(*this == o); }
 };
 
-// Style is a small value type. Not thread-safe for concurrent mutation
-// (bitfields share storage). Single-threaded TUI rendering only.
+// Compile-time size check to ensure Style remains compact
 static_assert(sizeof(Style) <= 24, "Style should remain compact");
 
 /// Predefined styles

@@ -32,24 +32,45 @@ inline char32_t utf8_decode(const char*& p, const char* end) {
     return cp;
 }
 
+// Pre-sorted table of wide character ranges for binary search
+// Each entry is {start_codepoint, end_codepoint}
+static constexpr std::pair<char32_t, char32_t> wide_ranges[] = {
+    {0x1100, 0x115F},      // Hangul Jamo
+    {0x2E80, 0x2EFF},      // CJK Radicals
+    {0x3040, 0x309F},      // Hiragana
+    {0x30A0, 0x30FF},      // Katakana
+    {0x31C0, 0x31EF},      // CJK Strokes
+    {0x3400, 0x4DBF},      // CJK Extension A
+    {0x4E00, 0x9FFF},      // CJK Unified Ideographs
+    {0xAC00, 0xD7AF},      // Hangul Syllables
+    {0xF900, 0xFAFF},      // CJK Compatibility Ideographs
+    {0xFF01, 0xFF60},      // Fullwidth ASCII
+    {0xFFE0, 0xFFE6},      // Fullwidth symbols
+    {0x20000, 0x2A6DF},    // CJK Extension B
+    {0x2A700, 0x2B73F},    // CJK Extension C
+    {0x2B740, 0x2B81F},    // CJK Extension D
+    {0x2B820, 0x2CEAF},    // CJK Extension E
+    {0x2F800, 0x2FA1F},    // CJK Compatibility Supplement
+};
+
 /// Check if a codepoint has display width 2 (CJK, Hangul, etc.)
+/// Uses binary search on pre-sorted ranges for O(log n) performance
 inline bool is_wide_codepoint(char32_t ch) {
-    return (ch >= 0x4E00 && ch <= 0x9FFF) ||    // CJK Unified Ideographs
-           (ch >= 0x3400 && ch <= 0x4DBF) ||     // CJK Extension A
-           (ch >= 0x20000 && ch <= 0x2A6DF) ||   // CJK Extension B
-           (ch >= 0x2A700 && ch <= 0x2B73F) ||   // CJK Extension C
-           (ch >= 0x2B740 && ch <= 0x2B81F) ||   // CJK Extension D
-           (ch >= 0x2B820 && ch <= 0x2CEAF) ||   // CJK Extension E
-           (ch >= 0xF900 && ch <= 0xFAFF) ||     // CJK Compatibility Ideographs
-           (ch >= 0x2F800 && ch <= 0x2FA1F) ||   // CJK Compatibility Supplement
-           (ch >= 0xAC00 && ch <= 0xD7AF) ||     // Hangul Syllables
-           (ch >= 0x1100 && ch <= 0x115F) ||     // Hangul Jamo
-           (ch >= 0x3040 && ch <= 0x309F) ||     // Hiragana
-           (ch >= 0x30A0 && ch <= 0x30FF) ||     // Katakana
-           (ch >= 0xFF01 && ch <= 0xFF60) ||     // Fullwidth ASCII
-           (ch >= 0xFFE0 && ch <= 0xFFE6) ||     // Fullwidth symbols
-           (ch >= 0x2E80 && ch <= 0x2EFF) ||     // CJK Radicals
-           (ch >= 0x31C0 && ch <= 0x31EF);       // CJK Strokes
+    // Binary search through the sorted ranges
+    int left = 0;
+    int right = static_cast<int>(sizeof(wide_ranges) / sizeof(wide_ranges[0])) - 1;
+    
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (ch < wide_ranges[mid].first) {
+            right = mid - 1;
+        } else if (ch > wide_ranges[mid].second) {
+            left = mid + 1;
+        } else {
+            return true; // Found range containing ch
+        }
+    }
+    return false;
 }
 
 /// Count visible display width of a UTF-8 string
