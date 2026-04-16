@@ -2,19 +2,30 @@
 #include "core/string_utils.hpp"
 #include <algorithm>
 #include <cstring>
+#include <mutex>
 
 namespace tui {
 
-// --- Implementación de Clipboard (Simulado) ---
-static std::string g_system_clipboard;
+// --- Implementación de Clipboard Thread-Safe ---
+class Clipboard {
+private:
+    static std::mutex mtx_;
+    static std::string content_;
+    
+public:
+    static void set(const std::string& text) {
+        std::lock_guard<std::mutex> lock(mtx_);
+        content_ = text;
+    }
+    
+    static std::string get() {
+        std::lock_guard<std::mutex> lock(mtx_);
+        return content_;
+    }
+};
 
-static void set_system_clipboard(const std::string& text) {
-    g_system_clipboard = text;
-}
-
-static std::string get_system_clipboard() {
-    return g_system_clipboard;
-}
+std::mutex Clipboard::mtx_;
+std::string Clipboard::content_;
 
 // --- Constructor ---
 
@@ -207,7 +218,7 @@ void TextInput::delete_char_forwards() {
 
 void TextInput::copy_to_clipboard() {
     if (has_selection()) {
-        set_system_clipboard(selected_text());
+        Clipboard::set(selected_text());
     }
 }
 
@@ -223,7 +234,7 @@ void TextInput::cut_to_clipboard() {
 }
 
 void TextInput::paste_from_clipboard() {
-    std::string clipboard = get_system_clipboard();
+    std::string clipboard = Clipboard::get();
     if (!clipboard.empty()) {
         std::string clean;
         for (char c : clipboard) {
@@ -251,8 +262,8 @@ bool TextInput::on_key_press(const Event& e) {
     last_blink_time_ = std::chrono::steady_clock::now();
     cursor_visible_ = true;
     
-    bool shift = (e.mods & KeyMods::Shift) != KeyMods::None;
-    bool ctrl = (e.mods & KeyMods::Ctrl) != KeyMods::None;
+    bool shift = e.mods.shift;
+    bool ctrl = e.mods.control;
     
     using namespace Keys;
     
@@ -276,10 +287,10 @@ bool TextInput::on_key_press(const Event& e) {
     }
     
     switch (e.key_code) {
-        case Left:
+        case ArrowLeft:
             move_cursor_left(shift);
             return true;
-        case Right:
+        case ArrowRight:
             move_cursor_right(shift);
             return true;
         case Home:
@@ -291,7 +302,7 @@ bool TextInput::on_key_press(const Event& e) {
         case Backspace:
             delete_char_backwards();
             return true;
-        case Delete:
+        case Delete_:
             delete_char_forwards();
             return true;
         default:
@@ -388,8 +399,11 @@ void TextInput::render(Renderer& renderer) {
         bg_style.bg = Color::RGB(30, 30, 30);
     }
     
-    for (int y = bounds_.y; y < bounds_.y + bounds_.h && y < renderer.height_; y++) {
-        for (int x = bounds_.x; x < bounds_.x + bounds_.w && x < renderer.width_; x++) {
+    int term_rows = renderer.rows();
+    int term_cols = renderer.cols();
+    
+    for (int y = bounds_.y; y < bounds_.y + bounds_.h && y < term_rows; y++) {
+        for (int x = bounds_.x; x < bounds_.x + bounds_.w && x < term_cols; x++) {
             renderer.write(x, y, " ", bg_style);
         }
     }
