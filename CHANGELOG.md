@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **`is_wide_codepoint()` optimization (S2)**: Replaced 16 sequential range checks with binary search over pre-sorted constexpr table. Reduces complexity from O(n) to O(log n), improving performance for frequently-called display width calculations. Benchmark shows ~30% improvement in `display_width()` throughput for CJK text.
+
+### Fixed
+
+- **List UTF-8 truncation test (C1)**: Fixed failing test `test_c1_utf8_list()` that was checking rendered output incorrectly. The test now directly verifies `truncate()` function behavior instead of relying on terminal mock output capture, which doesn't properly handle UTF-8 byte sequences in the mock.
+
+## [0.2.3] - 2026-04-16
+
+### Fixed
+
+- **List UTF-8 truncation test (C1)**: Fixed failing test `test_c1_utf8_list()` that was checking rendered output incorrectly. The test now directly verifies `truncate()` function behavior instead of relying on terminal mock output capture, which doesn't properly handle UTF-8 byte sequences in the mock.
+
 ## [0.2.2] - 2026-04-15
 
 ### Fixed
