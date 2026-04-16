@@ -39,7 +39,9 @@ public:
     // Override de Widget
     void render(Renderer& renderer) override;
     bool handle_event(const Event& e) override;
-    void update(double delta_time) override; // Para el parpadeo del cursor
+    
+    // Actualización interna (no override, método propio)
+    void update(double delta_time); // Para el parpadeo del cursor
 
 private:
     // --- Lógica Interna ---
@@ -53,7 +55,9 @@ private:
     void delete_char_forwards();
     void copy_to_clipboard();
     void cut_to_clipboard();
-    void paste_from_clipboard();
+public:
+    void paste_from_clipboard();  // Público para tests
+private:
     void clear_selection();
     void select_all();
     

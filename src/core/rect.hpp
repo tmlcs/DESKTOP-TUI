@@ -48,10 +48,21 @@ struct Rect {
 
     std::optional<Rect> intersection(const Rect& o) const {
         if (!intersects(o)) return std::nullopt;
+        
+        // Safe integer arithmetic with overflow protection
         int ix = std::max(x, o.x);
         int iy = std::max(y, o.y);
-        int iw = std::min(right(), o.right()) - ix;
-        int ih = std::min(bottom(), o.bottom()) - iy;
+        int o_right = o.right();
+        int o_bottom = o.bottom();
+        int my_right = right();
+        int my_bottom = bottom();
+        
+        int iw = std::min(my_right, o_right) - ix;
+        int ih = std::min(my_bottom, o_bottom) - iy;
+        
+        // Validate dimensions to prevent negative/overflow results
+        if (iw <= 0 || ih <= 0) return std::nullopt;
+        
         return Rect{ix, iy, iw, ih};
     }
 

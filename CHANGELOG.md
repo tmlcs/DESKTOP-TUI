@@ -15,6 +15,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **List UTF-8 truncation test (C1)**: Fixed failing test `test_c1_utf8_list()` that was checking rendered output incorrectly. The test now directly verifies `truncate()` function behavior instead of relying on terminal mock output capture, which doesn't properly handle UTF-8 byte sequences in the mock.
 
+## [0.2.7] - 2025-12-20
+
+### Security
+
+- **P0: Thread-safe clipboard implementation**: Replaced global `g_system_clipboard` variable with thread-safe `Clipboard` class using `std::mutex`. Prevents data races when clipboard is accessed from multiple threads. All clipboard operations (`copy_to_clipboard`, `cut_to_clipboard`, `paste_from_clipboard`) are now protected by mutex locks.
+
+### Fixed
+
+- **P0: DesktopManager bounds validation**: Added explicit validation in `switch_to(int index)` to reject negative indices and out-of-bounds access. Added null pointer check after retrieving desktop pointer to prevent crashes on edge cases.
+  
+- **P0: Rect integer overflow protection**: Enhanced `intersection()` method with safe integer arithmetic. Added validation to prevent negative or zero-width/height results from being returned. Explicit checks ensure dimensions are positive before returning intersection result.
+
+- **P0: Desktop removal edge cases**: Verified and documented correct behavior when removing desktops before, at, or after the active index. Active desktop pointer is properly updated in all scenarios.
+
+### Added
+
+- **tests/test_thread_safety.cpp**: New test suite for verifying thread-safe clipboard operations with concurrent read/write scenarios.
+  
+- **tests/test_rect_safety.cpp**: New test suite for Rect intersection edge cases including large values, negative coordinates, and boundary conditions.
+  
+- **tests/test_desktop_manager.cpp**: New test suite for DesktopManager safety including negative index rejection, out-of-bounds handling, and desktop removal scenarios.
+
+### Changed
+
+- **tests/CMakeLists.txt**: Updated to include new test files and link pthread library for thread safety tests.
+
 ## [0.2.5] - 2026-04-16
 
 ### Documentation

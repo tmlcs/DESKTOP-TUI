@@ -73,12 +73,16 @@ public:
         }
     }
 
-    // Switch to a desktop by index
+    // Switch to a desktop by index with bounds validation
     bool switch_to(int index) {
-        if (index < 0 || index >= static_cast<int>(desktops_.size())) return false;
+        // P0: Validate index to prevent negative or out-of-bounds access
+        if (index < 0 || index >= static_cast<int>(desktops_.size())) {
+            return false;
+        }
         if (active_) active_->set_active(false);
         active_index_ = index;
         active_ = desktops_[index].get();
+        if (!active_) return false;  // Safety guard against null pointer
         active_->set_active(true);
         on_switched_(*active_);
         return true;
