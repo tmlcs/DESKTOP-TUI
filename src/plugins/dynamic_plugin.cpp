@@ -1,4 +1,4 @@
-#include "plugin_interface.hpp"
+#include "plugins/plugin_interface.hpp"
 
 #include <dlfcn.h>
 #include <cstring>

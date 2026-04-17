@@ -1,2 +1,2 @@
 // Panel implementation
-#include "panel.hpp"
+#include "ui/panel.hpp"

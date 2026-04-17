@@ -1,5 +1,5 @@
 // Window static member initialization
-#include "window.hpp"
+#include "window/window.hpp"
 
 namespace tui {
     WindowId Window::next_id_ = 1;

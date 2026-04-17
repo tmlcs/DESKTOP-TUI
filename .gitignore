@@ -1,119 +1,31 @@
 ```
-# Build artifacts
-build/
-dist/
+# Build directories
+build-asan/
+build-sanitize/
+build-sanitizer/
+build-sanitizers/
 
-# Dependencies
-vendor/
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+CTestTestfile.cmake
+
+# Executables
+desktop-tui
+plugin_demo
+
+# Dynamic libraries
+*.so
+generated/
+
+# Doxygen documentation
+docs/html/
 
 # Logs
-*.log
+doxygen_warnings.log
 
-# Environment
-.env
-.env.local
-*.env.*
-
-# IDE
-.vscode/
-.idea/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Temporary files
-*.tmp
-*.swp
-*.swo
-
-# Coverage
-coverage/
-htmlcov/
-.coverage
-
-# C++ specific
-*.o
-*.obj
-*.a
-*.lib
-*.so
-*.dll
-*.dylib
-*.exe
-*.out
-
-# CMake
-CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
-Makefile
-*_autogen/
-
-# Compiled Python (if any)
-*.pyc
-__pycache__/
-*.pyo
-*.pyd
-
-# Package managers
-node_modules/
-.npm/
-.yarn/
-.pnpm/
-
-# Virtual environments
-venv/
-.venv/
-env/
-ENV/
-
-# Testing
-.pytest_cache/
-.mypy_cache/
-.tox/
-
-# Java/Maven/Gradle (if applicable)
-target/
-.gradle/
-*.class
-
-# Go (if applicable)
-*.exe
-*.dll
-*.so
-
-# Rust (if applicable)
-/target/
-
-# Zig (if applicable)
-zig-cache/
-zig-out/
-
-# Julia (if applicable)
-julia-*/
-
-# Compressed files
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
+# Generated headers
+build-sanitizer/generated/
 ```

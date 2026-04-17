@@ -1,5 +1,5 @@
 // Desktop static member initialization
-#include "desktop.hpp"
+#include "desktop/desktop.hpp"
 
 namespace tui {
     DesktopId Desktop::next_id_ = 1;

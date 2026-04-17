@@ -1,0 +1,9 @@
+/workspace/build-sanitizer/CMakeFiles/desktop-tui.dir
+/workspace/build-sanitizer/CMakeFiles/hello_world_plugin.dir
+/workspace/build-sanitizer/CMakeFiles/plugin_demo.dir
+/workspace/build-sanitizer/CMakeFiles/edit_cache.dir
+/workspace/build-sanitizer/CMakeFiles/rebuild_cache.dir
+/workspace/build-sanitizer/CMakeFiles/list_install_components.dir
+/workspace/build-sanitizer/CMakeFiles/install.dir
+/workspace/build-sanitizer/CMakeFiles/install/local.dir
+/workspace/build-sanitizer/CMakeFiles/install/strip.dir

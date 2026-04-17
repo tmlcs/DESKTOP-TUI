@@ -1,0 +1,158 @@
+# Doxyfile 1.9.x
+
+# Project related configuration
+PROJECT_NAME           = "Desktop TUI"
+PROJECT_NUMBER         = "0.3.1"
+PROJECT_BRIEF          = "Multi-desktop TUI framework in pure C++17"
+PROJECT_LOGO           = ""
+OUTPUT_DIRECTORY       = "docs"
+
+# Input configuration
+INPUT                  = include \
+                         src \
+                         README.md
+INPUT_ENCODING         = UTF-8
+FILE_PATTERNS          = *.cpp \
+                         *.hpp \
+                         *.h \
+                         *.md
+RECURSIVE              = YES
+EXCLUDE                = tests \
+                         examples \
+                         build* \
+                         .git
+EXCLUDE_SYMLINKS       = NO
+EXCLUDE_PATTERNS       = */.* \
+                         *_test.cpp \
+                         test_*.cpp \
+                         benchmark.cpp
+
+# Output configuration
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+GENERATE_LATEX         = NO
+GENERATE_RTF           = NO
+GENERATE_MAN           = NO
+GENERATE_XML           = NO
+GENERATE_DOCBOOK       = NO
+GENERATE_HTMLHELP      = NO
+
+# HTML options
+HTML_COLORSTYLE        = LIGHT
+HTML_EXTRA_STYLESHEET  = 
+HTML_EXTRA_FILES       = 
+HTML_HEADER            = 
+HTML_FOOTER            = 
+HTML_TIMESTAMP         = YES
+HTML_DYNAMIC_MENUS     = YES
+HTML_DYNAMIC_SECTIONS  = NO
+
+# Documentation extraction
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = NO
+EXTRACT_PRIV_VIRTUAL   = NO
+EXTRACT_PACKAGE        = NO
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = YES
+EXTRACT_LOCAL_METHODS  = NO
+EXTRACT_ANON_NSPACES   = NO
+
+# Source code display
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = NO
+STRIP_CODE_COMMENTS    = YES
+REFERENCED_BY_RELATION = YES
+REFERENCES_RELATION    = YES
+REFERENCES_LINK_SOURCE = YES
+USE_HTAGS              = NO
+VERBATIM_HEADERS       = YES
+
+# Cross-referencing
+ALPHABETICAL_INDEX     = YES
+COLS_IN_ALPHA_INDEX    = 5
+IGNORE_PREFIX          = 
+
+# Class diagram options
+HAVE_DOT               = NO
+CLASS_GRAPH            = YES
+COLLABORATION_GRAPH    = YES
+GROUP_GRAPHS           = YES
+UML_LOOK               = NO
+TEMPLATE_RELATIONS     = NO
+INCLUDE_GRAPH          = YES
+INCLUDED_BY_GRAPH      = YES
+CALL_GRAPH             = NO
+CALLER_GRAPH           = NO
+GRAPHICAL_HIERARCHY    = YES
+DIRECTORY_GRAPH        = YES
+
+# Preprocessor options
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = NO
+SEARCH_INCLUDES        = YES
+INCLUDE_PATH           = 
+INCLUDE_FILE_PATTERNS  = 
+PREDEFINED             = TUI_PLATFORM_LINUX=1 \
+                         TUI_PLATFORM_MACOS=1 \
+                         TUI_PLATFORM_WINDOWS=1 \
+                         TUI_PLATFORM_ANDROID=1 \
+                         TUI_PLUGINS_ENABLED=1
+EXPAND_AS_DEFINED      = 
+
+# Search engine
+SEARCHENGINE           = YES
+SERVER_BASED_SEARCH    = NO
+EXTERNAL_SEARCH        = NO
+
+# Miscellaneous
+OPTIMIZE_OUTPUT_FOR_C  = NO
+OPTIMIZE_OUTPUT_JAVA   = NO
+OPTIMIZE_FOR_FORTRAN   = NO
+OPTIMIZE_OUTPUT_VHDL   = NO
+OPTIMIZE_OUTPUT_SLICE  = NO
+EXTENSION_MAPPING      = 
+MARKDOWN_SUPPORT       = YES
+TOC_INCLUDE_HEADINGS   = 5
+AUTOLINK_SUPPORT       = YES
+BUILTIN_STL_SUPPORT    = YES
+CPP_CLI_SUPPORT        = NO
+SIP_SUPPORT            = NO
+IDL_PROPERTY_SUPPORT   = YES
+DISTRIBUTE_GROUP_DOC   = NO
+GENERATE_TREEVIEW      = YES
+FULL_SIDEBAR           = NO
+ENUM_VALUES_PER_LINE   = 1
+SHOW_ENUM_VALUES       = YES
+
+# Warning handling
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_NO_PARAMDOC       = YES
+WARN_AS_ERROR          = NO
+WARN_FORMAT            = "$file:$line: $text"
+WARN_LOGFILE           = doxygen_warnings.log
+
+# Input filtering
+FILTER_PATTERNS        = 
+FILTER_SOURCE_FILES    = NO
+
+# Tag files
+TAGFILES               = 
+GENERATE_TAGFILE       = 
+
+# Aliases
+ALIASES                = "threadsafe=@par Thread Safety:\nThis class is thread-safe." \
+                         "notthreadsafe=@par Thread Safety:\n@b Note: This class is NOT thread-safe. All operations must occur on the same thread." \
+                         "platform=Platform Support:"
+
+# Layout file
+LAYOUT_FILE            = 
+
+# Citation settings
+CITE_BIB_FILES         = 
+
+# Additional configuration
+QUIET                  = NO
+WARNINGS               = YES
+WARN_IF_INCOMPLETE_DOC = YES

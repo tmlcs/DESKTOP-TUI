@@ -1,4 +1,4 @@
-#include "../src/core/rect.hpp"
+#include "core/rect.hpp"
 #include <cassert>
 #include <iostream>
 #include <limits>

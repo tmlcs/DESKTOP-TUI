@@ -1,5 +1,5 @@
 // Renderer implementation (header-only, this file ensures compilation)
-#include "renderer.hpp"
+#include "ui/renderer.hpp"
 
 namespace tui {
 // All implementation is in the header

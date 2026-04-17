@@ -1,4 +1,4 @@
-#include "../src/desktop/desktop_manager.hpp"
+#include "desktop/desktop_manager.hpp"
 #include <cassert>
 #include <iostream>
 

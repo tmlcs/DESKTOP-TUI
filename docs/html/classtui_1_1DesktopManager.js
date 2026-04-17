@@ -1,0 +1,25 @@
+var classtui_1_1DesktopManager =
+[
+    [ "DesktopPtr", "classtui_1_1DesktopManager.html#a7a97d43e16a9db81a85b3fd4a0103261", null ],
+    [ "DesktopManager", "classtui_1_1DesktopManager.html#ad18147025cd2798a5789500b68755136", null ],
+    [ "DesktopManager", "classtui_1_1DesktopManager.html#aa5082c95a601bbdee65ca4cfcd3e32be", null ],
+    [ "active_desktop", "classtui_1_1DesktopManager.html#ad6d15ef90cf9496b94ab9348e250e7d3", null ],
+    [ "active_desktop", "classtui_1_1DesktopManager.html#a818e989261297e853e978e31814c9fbc", null ],
+    [ "active_index", "classtui_1_1DesktopManager.html#a15efb247ad11c587a9c9ac63c89451c0", null ],
+    [ "add_desktop", "classtui_1_1DesktopManager.html#ac549f86044397bbaefaf2a2508018a70", null ],
+    [ "all_desktops", "classtui_1_1DesktopManager.html#a3eaf697292feb1628de5e7922db3d977", null ],
+    [ "desktop_count", "classtui_1_1DesktopManager.html#ae7a802d9ba234bf7cb36729e94628a3c", null ],
+    [ "dispatch_event", "classtui_1_1DesktopManager.html#aac4adde5c06e373554e6450b29e70aba", null ],
+    [ "find_desktop", "classtui_1_1DesktopManager.html#a5eb3f7541e74c8048a3ad592f6464916", null ],
+    [ "get_desktop", "classtui_1_1DesktopManager.html#a8ad6c0b05a8ef3ba7428f5e2a725c9c3", null ],
+    [ "move_window_to_desktop", "classtui_1_1DesktopManager.html#ae177a87473e08c2e7f5bda6d969c3b82", null ],
+    [ "on_desktop_added", "classtui_1_1DesktopManager.html#a2a87158a74de874b60deeb83f57967b0", null ],
+    [ "on_resize", "classtui_1_1DesktopManager.html#ace30ae2011ed91c2d541259ab6f1c49a", null ],
+    [ "on_switched", "classtui_1_1DesktopManager.html#aa90084b0ff38bdfe71c302bc16ec6139", null ],
+    [ "remove_desktop", "classtui_1_1DesktopManager.html#af1a6dff1395ac42b338f0e5076b57296", null ],
+    [ "render_active_desktop", "classtui_1_1DesktopManager.html#a1edf352c15254f749e5f56aee1d200ed", null ],
+    [ "render_indicator", "classtui_1_1DesktopManager.html#a8a30e8dbf2e24c0ef3bfe54e907311b6", null ],
+    [ "switch_next", "classtui_1_1DesktopManager.html#a424a3e4fc456476d54c6d236b92942a9", null ],
+    [ "switch_prev", "classtui_1_1DesktopManager.html#a928bf9a703288f029ac6b444a1bfa419", null ],
+    [ "switch_to", "classtui_1_1DesktopManager.html#afed75e02916a1e414b6f79bb2f253193", null ]
+];

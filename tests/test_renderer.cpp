@@ -14,7 +14,8 @@ namespace tui {
 // Minimal terminal mock
 class MockTerminal : public tui::ITerminal {
 public:
-    int cols_ = 80, rows_ = 24;
+    int cols_ = 80;
+    int rows_ = 24;
     std::string output;
     tui::TerminalCaps caps_ = tui::TerminalCaps::None;
 

@@ -9,7 +9,7 @@
  * 5. Descargar plugins correctamente
  */
 
-#include "../src/plugins/plugin_manager.hpp"
+#include "plugins/plugin_manager.hpp"
 #include <iostream>
 #include <string>
 
