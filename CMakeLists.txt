@@ -82,6 +82,18 @@ set(WINDOW_SOURCES
     src/window/window.cpp
 )
 
+# Plugin sources (optional)
+option(ENABLE_PLUGINS "Enable plugin system" ON)
+if(ENABLE_PLUGINS)
+    set(PLUGIN_SOURCES
+        src/plugins/plugin_interface.hpp
+        src/plugins/dynamic_plugin.cpp
+        src/plugins/plugin_manager.hpp
+        src/plugins/plugin_manager.cpp
+    )
+    add_compile_definitions(TUI_PLUGINS_ENABLED)
+endif()
+
 # Main
 set(MAIN_SOURCES
     src/main.cpp
@@ -94,6 +106,7 @@ add_executable(${PROJECT_NAME}
     ${UI_SOURCES}
     ${DESKTOP_SOURCES}
     ${WINDOW_SOURCES}
+    ${PLUGIN_SOURCES}
     ${MAIN_SOURCES}
 )
 
@@ -105,6 +118,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 # Platform-specific link libraries
 if(WIN32)
     target_link_libraries(${PROJECT_NAME} PRIVATE user32)
+endif()
+
+# Plugin system requires dl on Unix-like systems
+if(ENABLE_PLUGINS AND (UNIX OR APPLE))
+    target_link_libraries(${PROJECT_NAME} PRIVATE dl)
 endif()
 
 # Install
@@ -132,6 +150,33 @@ configure_file(
     @ONLY
 )
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/generated)
+
+# Plugin examples (when plugins are enabled)
+if(ENABLE_PLUGINS)
+    # Example plugin: Hello World
+    add_library(hello_world_plugin SHARED
+        examples/plugins/hello_world_plugin.cpp
+    )
+    target_include_directories(hello_world_plugin PRIVATE
+        ${CMAKE_SOURCE_DIR}/src
+        ${CMAKE_SOURCE_DIR}/include
+    )
+    set_target_properties(hello_world_plugin PROPERTIES
+        PREFIX "lib"
+        OUTPUT_NAME "hello_world"
+    )
+    
+    # Plugin demo application
+    add_executable(plugin_demo
+        examples/plugins/demo_plugins.cpp
+        ${PLUGIN_SOURCES}
+    )
+    target_include_directories(plugin_demo PRIVATE
+        ${CMAKE_SOURCE_DIR}/src
+        ${CMAKE_SOURCE_DIR}/include
+    )
+    target_link_libraries(plugin_demo PRIVATE dl)
+endif()
 
 # Unit tests
 if(ENABLE_TESTS)
