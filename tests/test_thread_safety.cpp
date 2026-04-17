@@ -79,10 +79,13 @@ void test_clipboard_concurrent_read_write() {
 
 } // namespace tui
 
-int main() {
+namespace tui {
+
+void run_thread_safety_tests() {
     std::cout << "=== Thread Safety Tests ===" << std::endl;
-    tui::test_clipboard_thread_safety();
-    tui::test_clipboard_concurrent_read_write();
+    test_clipboard_thread_safety();
+    test_clipboard_concurrent_read_write();
     std::cout << "All thread safety tests passed!" << std::endl;
-    return 0;
 }
+
+} // namespace tui

@@ -4,6 +4,8 @@
 #include <cstdio>
 #include <cstring>
 
+namespace tui {
+
 #define TEST(name, expr) do { \
     if (expr) { (*passed)++; printf("  PASS: %s\n", name); } \
     else { (*failed)++; printf("  FAIL: %s\n", name); } \
@@ -186,3 +188,5 @@ void run_renderer_tests(int* passed, int* failed) {
     test_mark_dirty_rect(passed, failed);
     test_draw_box_bounds(passed, failed);
 }
+
+} // namespace tui

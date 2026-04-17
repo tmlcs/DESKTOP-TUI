@@ -26,7 +26,6 @@
 
 // Window
 #include "window/window.hpp"
-#include "window/window_manager.hpp"
 
 // Desktop
 #include "desktop/desktop.hpp"

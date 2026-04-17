@@ -3,6 +3,8 @@
 #include <cstdio>
 #include <cstring>
 
+namespace tui {
+
 #define TEST(name, expr) do { \
     if (expr) { (*passed)++; printf("  PASS: %s\n", name); } \
     else { (*failed)++; printf("  FAIL: %s\n", name); } \
@@ -70,25 +72,6 @@ void test_pad_center_right(int* passed, int* failed) {
     TEST("repeat 0", tui::repeat("ab", 0) == "");
 }
 
-void run_string_utils_tests(int* passed, int* failed);
-void run_renderer_tests(int* passed, int* failed);
-int run_critical_fixes_main();
-
-int main(int argc, char* argv[]) {
-    int passed = 0, failed = 0;
-    bool run_all = (argc == 1);
-    bool run_string_utils = run_all || (argc > 1 && strcmp(argv[1], "--string_utils") == 0);
-    bool run_renderer = run_all || (argc > 1 && strcmp(argv[1], "--renderer") == 0);
-    bool run_critical = run_all || (argc > 1 && strcmp(argv[1], "--critical") == 0);
-
-    if (run_string_utils) run_string_utils_tests(&passed, &failed);
-    if (run_renderer) run_renderer_tests(&passed, &failed);
-    if (run_critical) failed += run_critical_fixes_main();
-
-    printf("\n=== Results: %d passed, %d failed ===\n", passed, failed);
-    return failed > 0 ? 1 : 0;
-}
-
 void run_string_utils_tests(int* passed, int* failed) {
     test_display_width(passed, failed);
     test_truncate(passed, failed);
@@ -96,3 +79,5 @@ void run_string_utils_tests(int* passed, int* failed) {
     test_split(passed, failed);
     test_pad_center_right(passed, failed);
 }
+
+} // namespace tui

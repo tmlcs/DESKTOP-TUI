@@ -1,5 +1,7 @@
 ```
 # Build artifacts
+build/
+dist/
 *.o
 *.obj
 *.a
@@ -9,38 +11,32 @@
 *.exe
 *.out
 
-# CMake build system
-CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
-Makefile
-build/
-dist/
-
 # Dependencies
-venv/
-.venv/
+vendor/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Environment
 .env
 .env.local
 *.env.*
 
-# Logs and temp files
-*.log
-*.tmp
-*.swp
-
 # Editors
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# Test artifacts
-*.gcda
-*.gcno
+# Coverage
 coverage/
 htmlcov/
 .coverage
 
-# OS specific
+# OS
 .DS_Store
 Thumbs.db
 ```
