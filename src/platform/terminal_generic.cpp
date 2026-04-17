@@ -1,7 +1,7 @@
 // Generic/fallback terminal implementation
 // Minimal VT100 support for unknown platforms
 
-#include "terminal.hpp"
+#include "platform/terminal.hpp"
 #include <cstdio>
 
 namespace tui {

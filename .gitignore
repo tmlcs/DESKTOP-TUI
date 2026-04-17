@@ -1,5 +1,38 @@
 ```
 # Build artifacts
+build/
+dist/
+
+# Dependencies
+vendor/
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# C++ specific
 *.o
 *.obj
 *.a
@@ -10,33 +43,77 @@
 *.exe
 *.out
 
-# CMake build directories
-build/
-cmake-build-*/
+# CMake
 CMakeFiles/
 CMakeCache.txt
+cmake_install.cmake
 Makefile
-compile_commands.json
+*_autogen/
 
-# Dependencies
-vendor/
+# Compiled Python (if any)
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
 
-# Logs and temp files
-*.log
-*.tmp
-*.swp
+# Package managers
+node_modules/
+.npm/
+.yarn/
+.pnpm/
 
-# Editors
-.vscode/
-.idea/
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
 
-# Coverage reports
-coverage/
-htmlcov/
-.coverage
+# Testing
+.pytest_cache/
+.mypy_cache/
+.tox/
 
-# Environment
-.env
-.env.local
-.env.*
+# Java/Maven/Gradle (if applicable)
+target/
+.gradle/
+*.class
+
+# Go (if applicable)
+*.exe
+*.dll
+*.so
+
+# Rust (if applicable)
+/target/
+
+# Zig (if applicable)
+zig-cache/
+zig-out/
+
+# Julia (if applicable)
+julia-*/
+
+# Compressed files
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+*.rpm
+*.deb
+*.Z
+*.lz
+*.lzo
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
 ```

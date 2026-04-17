@@ -21,14 +21,14 @@ elseif(UNIX)
     add_compile_definitions(TUI_PLATFORM_LINUX)
 endif()
 
-# Core sources (always compiled)
+# Core sources (always compiled) - headers only, included from include/
 set(CORE_SOURCES
-    src/core/event.hpp
-    src/core/signal.hpp
-    src/core/rect.hpp
-    src/core/colors.hpp
-    src/core/string_utils.hpp
-    src/core/logger.hpp
+    include/core/event.hpp
+    include/core/signal.hpp
+    include/core/rect.hpp
+    include/core/colors.hpp
+    include/core/string_utils.hpp
+    include/core/logger.hpp
 )
 
 # Platform sources
@@ -56,29 +56,29 @@ endif()
 
 # UI sources
 set(UI_SOURCES
-    src/ui/renderer.hpp
+    include/ui/renderer.hpp
     src/ui/renderer.cpp
-    src/ui/widget.hpp
-    src/ui/panel.hpp
+    include/ui/widget.hpp
+    include/ui/panel.hpp
     src/ui/panel.cpp
-    src/ui/label.hpp
-    src/ui/border.hpp
-    src/ui/list.hpp
-    src/ui/text_input.hpp
+    include/ui/label.hpp
+    include/ui/border.hpp
+    include/ui/list.hpp
+    include/ui/text_input.hpp
     src/ui/text_input.cpp
 )
 
 # Desktop sources
 set(DESKTOP_SOURCES
-    src/desktop/desktop.hpp
+    include/desktop/desktop.hpp
     src/desktop/desktop.cpp
-    src/desktop/desktop_manager.hpp
+    include/desktop/desktop_manager.hpp
     src/desktop/desktop_manager.cpp
 )
 
 # Window sources
 set(WINDOW_SOURCES
-    src/window/window.hpp
+    include/window/window.hpp
     src/window/window.cpp
 )
 
@@ -86,9 +86,9 @@ set(WINDOW_SOURCES
 option(ENABLE_PLUGINS "Enable plugin system" ON)
 if(ENABLE_PLUGINS)
     set(PLUGIN_SOURCES
-        src/plugins/plugin_interface.hpp
+        include/plugins/plugin_interface.hpp
         src/plugins/dynamic_plugin.cpp
-        src/plugins/plugin_manager.hpp
+        include/plugins/plugin_manager.hpp
         src/plugins/plugin_manager.cpp
     )
     add_compile_definitions(TUI_PLUGINS_ENABLED)

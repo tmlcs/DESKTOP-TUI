@@ -1,7 +1,7 @@
 // Windows terminal implementation using Console API
 // Uses SetConsoleMode, WriteConsoleOutput, ReadConsoleInput
 
-#include "terminal.hpp"
+#include "platform/terminal.hpp"
 #include "core/string_utils.hpp"
 
 #ifdef TUI_PLATFORM_WINDOWS
