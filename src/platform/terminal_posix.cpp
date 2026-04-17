@@ -1,7 +1,7 @@
 // POSIX (Linux, macOS, BSD) terminal implementation
 // Uses termios for raw mode, ioctl for size, VT100 escape sequences
 
-#include "terminal.hpp"
+#include "platform/terminal.hpp"
 #include "core/string_utils.hpp"
 #include <cstdio>
 #include <cstdlib>

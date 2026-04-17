@@ -1,7 +1,7 @@
 // Android (Termux) terminal implementation
 // Essentially same as POSIX but with Termux-specific adjustments
 
-#include "terminal.hpp"
+#include "platform/terminal.hpp"
 
 #ifdef TUI_PLATFORM_ANDROID
 

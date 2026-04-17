@@ -1,7 +1,7 @@
 // Generic/fallback input handler
 // Minimal stdin reading for unknown platforms
 
-#include "input.hpp"
+#include "platform/input.hpp"
 #include <cstdio>
 #include <vector>
 

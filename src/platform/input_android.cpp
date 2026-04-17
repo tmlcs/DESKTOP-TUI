@@ -1,7 +1,7 @@
 // Android (Termux) input handler
 // Same as POSIX implementation
 
-#include "input.hpp"
+#include "platform/input.hpp"
 
 #ifdef TUI_PLATFORM_ANDROID
 

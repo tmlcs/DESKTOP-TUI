@@ -1,7 +1,7 @@
 // POSIX (Linux, macOS) input handler
 // Uses termios raw mode + stdin reading
 
-#include "input.hpp"
+#include "platform/input.hpp"
 #include "core/config.hpp"
 #include <cstdio>
 #include <unistd.h>

@@ -1,6 +1,6 @@
 // Windows input handler using ReadConsoleInput
 
-#include "input.hpp"
+#include "platform/input.hpp"
 
 #ifdef TUI_PLATFORM_WINDOWS
 
