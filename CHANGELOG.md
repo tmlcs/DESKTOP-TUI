@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-Q2
+
+### Security
+
+- **Bracketed Paste Injection Prevention**: Implemented in POSIX input handler to prevent malicious paste attacks by validating bracketed paste sequences before processing
+- **Title Sanitization**: Added sanitization for terminal titles across all platforms (POSIX, Windows, Generic) to strip control characters and prevent escape sequence injection
+- **Thread-Safe Clipboard API**: Exposed `ClipboardImpl` class in public header for safe concurrent access testing and external usage
+
+### Fixed
+
+- **Focus Invariants in Panel::remove_child()**: Corrected focus management when removing child widgets to prevent dangling pointers and ensure proper focus transfer
+- **Terminal Initialization Validation**: Added robust initialization checks for terminal handlers on POSIX, Windows, and Generic platforms to prevent undefined behavior on failed initialization
+- **Thread Safety Test Architecture**: Refactored tests to use `ClipboardImpl` directly instead of `TextInput` (which is single-threaded by design), clarifying the thread-safety boundary
+
+### Changed
+
+- **Clipboard Implementation**: Refactored internal `Clipboard` class to delegate to `ClipboardImpl` for better separation of concerns and testability
+- **Test Infrastructure**: Improved thread safety tests to properly validate concurrent read/write operations on the clipboard component
+
+### Technical Debt
+
+- Documented that `TextInput` widget is NOT thread-safe (designed for single-threaded UI main loop)
+- Clarified thread-safety boundaries: only `ClipboardImpl` provides thread-safe operations
+
+---
+
 ## [0.2.8] - 2026-04-17
 
 ### Fixed

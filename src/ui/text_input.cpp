@@ -6,26 +6,31 @@
 
 namespace tui {
 
-// --- Implementación de Clipboard Thread-Safe ---
+// --- Implementación de ClipboardImpl Thread-Safe ---
+std::mutex ClipboardImpl::mtx_;
+std::string ClipboardImpl::content_;
+
+void ClipboardImpl::set(const std::string& text) {
+    std::lock_guard<std::mutex> lock(mtx_);
+    content_ = text;
+}
+
+std::string ClipboardImpl::get() {
+    std::lock_guard<std::mutex> lock(mtx_);
+    return content_;
+}
+
+// --- Clase Clipboard interna (legacy, usa ClipboardImpl) ---
 class Clipboard {
-private:
-    static std::mutex mtx_;
-    static std::string content_;
-    
 public:
     static void set(const std::string& text) {
-        std::lock_guard<std::mutex> lock(mtx_);
-        content_ = text;
+        ClipboardImpl::set(text);
     }
     
     static std::string get() {
-        std::lock_guard<std::mutex> lock(mtx_);
-        return content_;
+        return ClipboardImpl::get();
     }
 };
-
-std::mutex Clipboard::mtx_;
-std::string Clipboard::content_;
 
 // --- Constructor ---
 
