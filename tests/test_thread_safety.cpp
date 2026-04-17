@@ -1,4 +1,4 @@
-#include "../src/ui/text_input.hpp"
+#include "ui/text_input.hpp"
 #include <thread>
 #include <cassert>
 #include <iostream>

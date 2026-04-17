@@ -1,20 +1,96 @@
 ---
-BasedOnStyle: LLVM
-IndentWidth: 4
-TabWidth: 4
-UseTab: Never
-ColumnLimit: 120
-AccessModifierOffset: -4
-Standard: c++17
-SortIncludes: false
+# .clang-format - Desktop TUI Project Style Guide
+# Basado en LLVM con personalizaciones para C++17
+
+Language:        Cpp
+BasedOnStyle:  LLVM
+
+# Ancho de tabulación y columnas
+IndentWidth:     4
+TabWidth:        4
+UseTab:          Never
+ColumnLimit:     100
+ContinuationIndentWidth: 4
+
+# Alineación
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignEscapedNewlines: Right
+AlignOperands:   Align
+AlignTrailingComments: true
+
+# Saltos de línea
+AllowAllArgumentsOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: All
+AllowShortLoopsOnASingleLine: false
+AlwaysBreakAfterReturnType: None
+AlwaysBreakTemplateDeclarations: Yes
+
+# Paréntesis y llaves
+BraceWrapping:
+  AfterClass:      false
+  AfterControlStatement: Never
+  AfterEnum:       false
+  AfterFunction:   true
+  AfterNamespace:  false
+  AfterStruct:     false
+  BeforeCatch:     false
+  BeforeElse:      false
+  IndentBraces:    false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+
+BreakBeforeBinaryOperators: None
 BreakBeforeBraces: Attach
-PointerAlignment: Left
-ReferenceAlignment: Left
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: BeforeColon
+
+# Espacios
+SpaceAfterCStyleCast: false
+SpaceAfterLogicalNot: false
+SpaceAfterTemplateKeyword: true
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: ControlStatements
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 1
+SpacesInAngles: false
+SpacesInCStyleCastParentheses: false
+SpacesInContainerLiterals: true
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
-SpaceBeforeParens: ControlStatements
-AllowShortFunctionsOnASingleLine: Inline
-AllowShortIfStatementsOnASingleLine: false
-AllowShortLoopsOnASingleLine: false
+
+# Includes
+SortIncludes: CaseInsensitive
+SortUsingDeclarations: true
+
+Standard: c++17
+
+# Punteros y referencias
+DerivePointerAlignment: false
+PointerAlignment: Left
+ReferenceAlignment: Left
+
+# Modificadores de acceso
+AccessModifierOffset: -4
+
+# Líneas vacías
+MaxEmptyLinesToKeep: 1
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+# Namespaces
+CompactNamespaces: false
+FixNamespaceComments: true
 NamespaceIndentation: None
+
 ...

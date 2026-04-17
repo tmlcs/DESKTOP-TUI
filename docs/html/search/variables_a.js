@@ -1,0 +1,19 @@
+var searchData=
+[
+  ['max_5fdesktop_5fcount_0',['MAX_DESKTOP_COUNT',['../structtui_1_1Config.html#a685dc5500312b474ecc5b003073838de',1,'tui::Config']]],
+  ['max_5finput_5fbuffer_5fsize_1',['MAX_INPUT_BUFFER_SIZE',['../structtui_1_1Config.html#acd34ea8c0cac6c95e1ebc632a13e3d4b',1,'tui::Config']]],
+  ['max_5fterminal_5fcols_2',['MAX_TERMINAL_COLS',['../structtui_1_1Config.html#ac01efa06071ec32369cc46b4e7a8cfd9',1,'tui::Config']]],
+  ['max_5fterminal_5frows_3',['MAX_TERMINAL_ROWS',['../structtui_1_1Config.html#a432dc3b6c0e825824cb300b4ef2458bf',1,'tui::Config']]],
+  ['max_5ftitle_5flength_4',['MAX_TITLE_LENGTH',['../structtui_1_1Config.html#a25aa573663d39767f1dbecbaad85fa4f',1,'tui::Config']]],
+  ['message_5',['message',['../structdesktop__tui_1_1PluginResult.html#ac6e4f69f7644e010ae6248f4729290d7',1,'desktop_tui::PluginResult']]],
+  ['meta_6',['meta',['../structtui_1_1KeyMods.html#ae5bdf515170870f3c5785d41586b236f',1,'tui::KeyMods']]],
+  ['min_5fterminal_5fcols_7',['MIN_TERMINAL_COLS',['../structtui_1_1Config.html#a49c4fb4c1d4613e0d91d40b57318f42c',1,'tui::Config']]],
+  ['min_5fterminal_5frows_8',['MIN_TERMINAL_ROWS',['../structtui_1_1Config.html#a1d030576f166ac143dd7fb9729747892',1,'tui::Config']]],
+  ['min_5fwindow_5fheight_9',['MIN_WINDOW_HEIGHT',['../structtui_1_1Config.html#a8ba43d7816abfeb4dda861194e8a7e04',1,'tui::Config']]],
+  ['min_5fwindow_5fwidth_10',['MIN_WINDOW_WIDTH',['../structtui_1_1Config.html#a8dd8940911d75808ec4847c9962649f1',1,'tui::Config']]],
+  ['mode_11',['mode',['../structtui_1_1Color.html#ac4a6b50aed4c78cb881595ae0c66e412',1,'tui::Color']]],
+  ['mods_12',['mods',['../structtui_1_1Event.html#a5d84ae20e544d0e9257560cbe9acd597',1,'tui::Event']]],
+  ['mouse_5fbutton_13',['mouse_button',['../structtui_1_1Event.html#a3a4050abe7708701460fa10a320ba77d',1,'tui::Event']]],
+  ['mouse_5fx_14',['mouse_x',['../structtui_1_1Event.html#a87fa9b388124fac2f9a62d2df3cf86ec',1,'tui::Event']]],
+  ['mouse_5fy_15',['mouse_y',['../structtui_1_1Event.html#a7737fca652a21d94963ec00a68945f12',1,'tui::Event']]]
+];

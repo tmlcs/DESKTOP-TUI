@@ -5,7 +5,7 @@
  * y puede ser usado como template para crear plugins personalizados.
  */
 
-#include "../../src/plugins/plugin_interface.hpp"
+#include "plugins/plugin_interface.hpp"
 #include <iostream>
 
 using namespace desktop_tui;

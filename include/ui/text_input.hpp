@@ -6,8 +6,20 @@
 #include <string>
 #include <optional>
 #include <chrono>
+#include <mutex>
 
 namespace tui {
+
+// Clipboard implementation - thread-safe internal class
+class ClipboardImpl {
+public:
+    static void set(const std::string& text);
+    static std::string get();
+    
+private:
+    static std::mutex mtx_;
+    static std::string content_;
+};
 
 /**
  * @brief Widget de entrada de texto de una sola línea con soporte UTF-8.

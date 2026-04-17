@@ -17,7 +17,8 @@ namespace tui {
 // Minimal terminal mock for widget tests
 class MockTerminal : public tui::ITerminal {
 public:
-    int cols_ = 80, rows_ = 24;
+    int cols_ = 80;
+    int rows_ = 24;
     std::string output;
 
     bool init() override { return true; }
@@ -159,8 +160,9 @@ void test_label_basic(int* passed, int* failed) {
 void test_label_render(int* passed, int* failed) {
     printf("\n=== Label rendering ===\n");
 
-    MockTerminal term;
-    Renderer r(term);
+    // Use heap allocation to avoid stack overflow with ASan
+    auto term = std::make_unique<MockTerminal>();
+    Renderer r(*term);
     r.resize(40, 10);
     r.clear();
 
@@ -171,14 +173,15 @@ void test_label_render(int* passed, int* failed) {
 
     TEST("label renders without crash", true);
 
-    // Test hidden label doesn't render
-    Label l2("Hidden");
-    l2.hide();
-    l2.set_bounds({5, 4, 20, 1});
-    l2.render(r);
-    r.flush();
-
-    TEST("hidden label doesn't render", true);
+    // Test hidden label doesn't render - use separate scope to reduce stack pressure
+    {
+        Label l2("Hidden");
+        l2.hide();
+        l2.set_bounds({5, 4, 20, 1});
+        l2.render(r);
+        r.flush();
+        TEST("hidden label doesn't render", true);
+    }
 }
 
 void test_label_align(int* passed, int* failed) {

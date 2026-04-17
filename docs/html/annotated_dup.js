@@ -1,0 +1,47 @@
+var annotated_dup =
+[
+    [ "desktop_tui", "namespacedesktop__tui.html", [
+      [ "DynamicPlugin", "classdesktop__tui_1_1DynamicPlugin.html", "classdesktop__tui_1_1DynamicPlugin" ],
+      [ "IPlugin", "classdesktop__tui_1_1IPlugin.html", "classdesktop__tui_1_1IPlugin" ],
+      [ "PluginContext", "classdesktop__tui_1_1PluginContext.html", "classdesktop__tui_1_1PluginContext" ],
+      [ "PluginContextImpl", "classdesktop__tui_1_1PluginContextImpl.html", "classdesktop__tui_1_1PluginContextImpl" ],
+      [ "PluginInfo", "structdesktop__tui_1_1PluginInfo.html", "structdesktop__tui_1_1PluginInfo" ],
+      [ "PluginManager", "classdesktop__tui_1_1PluginManager.html", "classdesktop__tui_1_1PluginManager" ],
+      [ "PluginResult", "structdesktop__tui_1_1PluginResult.html", "structdesktop__tui_1_1PluginResult" ]
+    ] ],
+    [ "tui", "namespacetui.html", [
+      [ "Border", "classtui_1_1Border.html", "classtui_1_1Border" ],
+      [ "Cell", "structtui_1_1Cell.html", "structtui_1_1Cell" ],
+      [ "Clipboard", "classtui_1_1Clipboard.html", "classtui_1_1Clipboard" ],
+      [ "ClipboardImpl", "classtui_1_1ClipboardImpl.html", "classtui_1_1ClipboardImpl" ],
+      [ "Color", "structtui_1_1Color.html", "structtui_1_1Color" ],
+      [ "ColorRGB", "structtui_1_1ColorRGB.html", "structtui_1_1ColorRGB" ],
+      [ "Config", "structtui_1_1Config.html", "structtui_1_1Config" ],
+      [ "Desktop", "classtui_1_1Desktop.html", "classtui_1_1Desktop" ],
+      [ "DesktopManager", "classtui_1_1DesktopManager.html", "classtui_1_1DesktopManager" ],
+      [ "Event", "structtui_1_1Event.html", "structtui_1_1Event" ],
+      [ "EventBus", "classtui_1_1EventBus.html", "classtui_1_1EventBus" ],
+      [ "GenericInput", "classtui_1_1GenericInput.html", "classtui_1_1GenericInput" ],
+      [ "GenericTerminal", "classtui_1_1GenericTerminal.html", "classtui_1_1GenericTerminal" ],
+      [ "IInput", "classtui_1_1IInput.html", "classtui_1_1IInput" ],
+      [ "ITerminal", "classtui_1_1ITerminal.html", "classtui_1_1ITerminal" ],
+      [ "KeyMods", "structtui_1_1KeyMods.html", "structtui_1_1KeyMods" ],
+      [ "Label", "classtui_1_1Label.html", "classtui_1_1Label" ],
+      [ "List", "classtui_1_1List.html", "classtui_1_1List" ],
+      [ "Logger", "classtui_1_1Logger.html", "classtui_1_1Logger" ],
+      [ "Panel", "classtui_1_1Panel.html", "classtui_1_1Panel" ],
+      [ "Point", "structtui_1_1Point.html", "structtui_1_1Point" ],
+      [ "PosixInput", "classtui_1_1PosixInput.html", "classtui_1_1PosixInput" ],
+      [ "PosixTerminal", "classtui_1_1PosixTerminal.html", "classtui_1_1PosixTerminal" ],
+      [ "Rect", "structtui_1_1Rect.html", "structtui_1_1Rect" ],
+      [ "Renderer", "classtui_1_1Renderer.html", "classtui_1_1Renderer" ],
+      [ "Signal", "classtui_1_1Signal.html", "classtui_1_1Signal" ],
+      [ "Style", "structtui_1_1Style.html", "structtui_1_1Style" ],
+      [ "TextInput", "classtui_1_1TextInput.html", "classtui_1_1TextInput" ],
+      [ "Widget", "classtui_1_1Widget.html", "classtui_1_1Widget" ],
+      [ "Window", "classtui_1_1Window.html", "classtui_1_1Window" ],
+      [ "WindowsInput", "classtui_1_1WindowsInput.html", "classtui_1_1WindowsInput" ],
+      [ "WindowsTerminal", "classtui_1_1WindowsTerminal.html", "classtui_1_1WindowsTerminal" ]
+    ] ],
+    [ "TUIShell", "classTUIShell.html", "classTUIShell" ]
+];
