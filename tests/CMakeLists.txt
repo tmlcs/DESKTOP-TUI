@@ -9,6 +9,11 @@ add_executable(test_all
     test_thread_safety.cpp
     test_rect_safety.cpp
     test_desktop_manager.cpp
+    test_rect.cpp
+    test_colors.cpp
+    test_signal.cpp
+    test_event.cpp
+    test_widgets.cpp
     ${CMAKE_SOURCE_DIR}/src/desktop/desktop.cpp
     ${CMAKE_SOURCE_DIR}/src/desktop/desktop_manager.cpp
     ${CMAKE_SOURCE_DIR}/src/window/window.cpp
