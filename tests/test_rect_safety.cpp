@@ -50,15 +50,15 @@ void test_intersection_large_values() {
 }
 
 void test_intersection_negative_coords() {
-    Rect a{-10, -10, 20, 20};
-    Rect b{-5, -5, 20, 20};
+    Rect a{-10, -10, 20, 20};  // [-10, 10] x [-10, 10]
+    Rect b{-5, -5, 20, 20};    // [-5, 15] x [-5, 15]
     
     auto result = a.intersection(b);
     assert(result.has_value());
-    assert(result->x == -5);
-    assert(result->y == -5);
-    assert(result->w == 5);
-    assert(result->h == 5);
+    assert(result->x == -5);   // max(-10, -5)
+    assert(result->y == -5);   // max(-10, -5)
+    assert(result->w == 15);   // min(10, 15) - (-5) = 15
+    assert(result->h == 15);   // min(10, 15) - (-5) = 15
     std::cout << "✓ Negative coordinates intersection test passed" << std::endl;
 }
 
@@ -86,15 +86,18 @@ void test_clamp_outside_bounds() {
 
 } // namespace tui
 
-int main() {
+namespace tui {
+
+void run_rect_safety_tests() {
     std::cout << "=== Rect Safety Tests ===" << std::endl;
-    tui::test_intersection_normal();
-    tui::test_intersection_no_overlap();
-    tui::test_intersection_edge_touching();
-    tui::test_intersection_large_values();
-    tui::test_intersection_negative_coords();
-    tui::test_clamp_within_bounds();
-    tui::test_clamp_outside_bounds();
+    test_intersection_normal();
+    test_intersection_no_overlap();
+    test_intersection_edge_touching();
+    test_intersection_large_values();
+    test_intersection_negative_coords();
+    test_clamp_within_bounds();
+    test_clamp_outside_bounds();
     std::cout << "All rect safety tests passed!" << std::endl;
-    return 0;
 }
+
+} // namespace tui

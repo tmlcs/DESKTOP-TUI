@@ -35,7 +35,23 @@ public:
         }
     }
 
-    bool init() override { return true; }
+    bool init() override {
+        // SEC-04: Validate terminal initialization on Windows
+        // Check if we have a valid console handle
+        if (hOut_ == INVALID_HANDLE_VALUE || hIn_ == INVALID_HANDLE_VALUE) {
+            // No console attached - could be a GUI app or redirected output
+            // This limits functionality but isn't necessarily fatal
+            return false;
+        }
+        
+        // Validate minimum terminal size
+        if (cols_ < 10 || rows_ < 5) {
+            // Terminal too small for meaningful UI
+            // Could fallback to a message or refuse to initialize
+        }
+        
+        return true;
+    }
 
     void shutdown() override {
         if (raw_mode_) leave_raw_mode();

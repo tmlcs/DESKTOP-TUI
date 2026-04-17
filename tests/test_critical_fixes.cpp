@@ -11,6 +11,8 @@
 #include <cstring>
 #include <cassert>
 
+namespace tui {
+
 #define TEST(name, expr) do { \
     if (expr) { (*passed)++; printf("  PASS: %s\n", name); } \
     else { (*failed)++; printf("  FAIL: %s\n", name); } \
@@ -402,3 +404,5 @@ int run_critical_fixes_main() {
     printf("\n=== Results: %d passed, %d failed ===\n\n", p, f);
     return f;
 }
+
+} // namespace tui

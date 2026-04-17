@@ -97,15 +97,18 @@ void test_initial_desktop_activated() {
 
 } // namespace tui
 
-int main() {
+namespace tui {
+
+void run_desktop_manager_tests() {
     std::cout << "=== Desktop Manager Safety Tests ===" << std::endl;
-    tui::test_switch_to_negative_index();
-    tui::test_switch_to_out_of_bounds();
-    tui::test_switch_to_valid_index();
-    tui::test_remove_desktop_before_active();
-    tui::test_remove_active_desktop();
-    tui::test_remove_last_desktop_prevented();
-    tui::test_initial_desktop_activated();
+    test_switch_to_negative_index();
+    test_switch_to_out_of_bounds();
+    test_switch_to_valid_index();
+    test_remove_desktop_before_active();
+    test_remove_active_desktop();
+    test_remove_last_desktop_prevented();
+    test_initial_desktop_activated();
     std::cout << "All desktop manager tests passed!" << std::endl;
-    return 0;
 }
+
+} // namespace tui

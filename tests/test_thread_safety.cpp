@@ -35,20 +35,18 @@ void test_clipboard_thread_safety() {
 void test_clipboard_concurrent_read_write() {
     std::cout << "Testing concurrent clipboard read/write..." << std::endl;
     
-    TextInput input("test data");
-    input.select_all();
+    // Test ClipboardImpl directly (it's the thread-safe component)
+    // Note: TextInput is NOT thread-safe by design (UI main-thread only)
     
     std::vector<std::thread> threads;
     bool error = false;
     
-    // Writers
+    // Writers - use ClipboardImpl directly
     for (int i = 0; i < 5; i++) {
-        threads.emplace_back([&input, &error, i]() {
+        threads.emplace_back([&error, i]() {
             try {
                 for (int j = 0; j < 100; j++) {
-                    input.set_value("Writer" + std::to_string(i) + "_" + std::to_string(j));
-                    input.select_all();
-                    input.copy_to_clipboard();
+                    ClipboardImpl::set("Writer" + std::to_string(i) + "_" + std::to_string(j));
                 }
             } catch (...) {
                 error = true;
@@ -56,12 +54,13 @@ void test_clipboard_concurrent_read_write() {
         });
     }
     
-    // Readers
+    // Readers - use ClipboardImpl directly
     for (int i = 0; i < 5; i++) {
-        threads.emplace_back([&input, &error]() {
+        threads.emplace_back([&error]() {
             try {
                 for (int j = 0; j < 100; j++) {
-                    input.paste_from_clipboard();
+                    std::string val = ClipboardImpl::get();
+                    (void)val; // suppress unused warning
                 }
             } catch (...) {
                 error = true;
@@ -79,10 +78,13 @@ void test_clipboard_concurrent_read_write() {
 
 } // namespace tui
 
-int main() {
+namespace tui {
+
+void run_thread_safety_tests() {
     std::cout << "=== Thread Safety Tests ===" << std::endl;
-    tui::test_clipboard_thread_safety();
-    tui::test_clipboard_concurrent_read_write();
+    test_clipboard_thread_safety();
+    test_clipboard_concurrent_read_write();
     std::cout << "All thread safety tests passed!" << std::endl;
-    return 0;
 }
+
+} // namespace tui

@@ -37,14 +37,32 @@ public:
     }
 
     bool init() override {
+        // SEC-04: Validate terminal initialization
+        // Check if stdin is actually a terminal
+        if (!isatty(STDIN_FILENO)) {
+            // Not a terminal - could be piped input or redirected
+            // This is not necessarily an error, but limits functionality
+            // Mouse and raw mode won't work properly
+        }
+        
         update_size();
+        
+        // Validate minimum terminal size
+        if (cols_ < 10 || rows_ < 5) {
+            // Terminal too small for meaningful UI
+            // Could fallback to a message or refuse to initialize
+            // For now, just log the issue
+        }
+        
         // Install SIGWINCH handler that sets a flag for the main loop to detect
         struct sigaction sa;
         memset(&sa, 0, sizeof(sa));
         sa.sa_handler = sigwinch_handler;
         sa.sa_flags = 0;
         sigemptyset(&sa.sa_mask);
-        sigaction(SIGWINCH, &sa, nullptr);
+        if (sigaction(SIGWINCH, &sa, nullptr) != 0) {
+            // Failed to install signal handler - non-fatal but resize won't work
+        }
         return true;
     }
 

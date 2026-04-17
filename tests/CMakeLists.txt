@@ -2,6 +2,7 @@
 cmake_minimum_required(VERSION 3.14)
 
 add_executable(test_all
+    test_main.cpp
     test_string_utils.cpp
     test_renderer.cpp
     test_critical_fixes.cpp
