@@ -11,14 +11,21 @@
 #include <termios.h>
 #include <csignal>
 #include <cerrno>
+#include <atomic>
+#include <limits>
 
 namespace tui {
 
+// SEC-03: Static atomic flag for resize signal - safe to access from signal handler
+static std::atomic<bool> g_resize_pending{false};
+
+// SEC-04: Global flag to prevent signal handling before initialization
+static std::atomic<bool> g_is_initialized{false};
+
 class PosixTerminal : public ITerminal {
 public:
-    PosixTerminal() : cols_(80), rows_(24), raw_mode_(false), alt_screen_(false), resize_pending_(false) {
-        g_active_terminal = this;
-        // Initialize orig_termios_ to safe defaults and capture current state
+    PosixTerminal() : cols_(80), rows_(24), raw_mode_(false), alt_screen_(false) {
+        // Initialize with safe defaults
         memset(&orig_termios_, 0, sizeof(orig_termios_));
         if (tcgetattr(STDIN_FILENO, &orig_termios_) != 0) {
             // Failed to get terminal attributes - this might not be a terminal
@@ -30,10 +37,11 @@ public:
     }
 
     ~PosixTerminal() override {
-        if (g_active_terminal == this) g_active_terminal = nullptr;
         if (raw_mode_) leave_raw_mode();
         if (alt_screen_) leave_alternate_screen();
         cursor_show();
+        // Mark as uninitialized before destruction
+        g_is_initialized = false;
     }
 
     bool init() override {
@@ -47,12 +55,15 @@ public:
         
         update_size();
         
-        // Validate minimum terminal size
+        // SEC-02: Validate dimensions to prevent underflow/overflow
         if (cols_ < 10 || rows_ < 5) {
             // Terminal too small for meaningful UI
             // Could fallback to a message or refuse to initialize
             // For now, just log the issue
         }
+        
+        // Mark as initialized AFTER successful setup
+        g_is_initialized = true;
         
         // Install SIGWINCH handler that sets a flag for the main loop to detect
         struct sigaction sa;
@@ -69,8 +80,9 @@ public:
     // Check if a resize event is pending and handle it
     // Returns true if the size changed
     bool check_resize(int& new_cols, int& new_rows) {
-        if (!resize_pending_) return false;
-        resize_pending_ = false;
+        // SEC-03: Use atomic flag instead of instance member for signal safety
+        if (!g_resize_pending.load()) return false;
+        g_resize_pending.store(false);
         int old_cols = cols_;
         int old_rows = rows_;
         update_size();
@@ -266,11 +278,31 @@ public:
     }
 
 private:
+    // SEC-02: Constants for dimension validation
+    static constexpr int MIN_TERM_COLS = 10;
+    static constexpr int MIN_TERM_ROWS = 5;
+    static constexpr int MAX_TERM_COLS = 10000;
+    static constexpr int MAX_TERM_ROWS = 10000;
+
     void update_size() {
         struct winsize ws;
         if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == 0) {
-            cols_ = ws.ws_col;
-            rows_ = ws.ws_row;
+            // SEC-02: Validate dimensions to prevent underflow/overflow
+            if (ws.ws_col >= MIN_TERM_COLS && ws.ws_col <= MAX_TERM_COLS) {
+                cols_ = ws.ws_col;
+            } else if (ws.ws_col < MIN_TERM_COLS) {
+                cols_ = MIN_TERM_COLS;
+            } else {
+                cols_ = MAX_TERM_COLS;
+            }
+            
+            if (ws.ws_row >= MIN_TERM_ROWS && ws.ws_row <= MAX_TERM_ROWS) {
+                rows_ = ws.ws_row;
+            } else if (ws.ws_row < MIN_TERM_ROWS) {
+                rows_ = MIN_TERM_ROWS;
+            } else {
+                rows_ = MAX_TERM_ROWS;
+            }
         }
     }
 
@@ -299,24 +331,23 @@ private:
     TerminalCaps caps_;
     bool raw_mode_;
     bool alt_screen_;
-    volatile sig_atomic_t resize_pending_;
     struct termios orig_termios_;
 
     static void sigwinch_handler(int) {
-        // We can't access instance members from a C signal handler.
-        // Instead, we use a global pointer to the active terminal instance.
-        // This is set when the terminal is created.
-        if (g_active_terminal) {
-            g_active_terminal->resize_pending_ = true;
+        // SEC-03: Prevent signal handling before initialization or after destruction
+        // This prevents use-after-free and null pointer dereference
+        if (!g_is_initialized.load()) {
+            return;
         }
+        // Set atomic flag - safe to access from signal handler
+        g_resize_pending.store(true);
     }
 
-    // Global pointer for signal handler access (set in constructor)
-    static PosixTerminal* g_active_terminal;
+    // SEC-03: Removed g_active_terminal static pointer to eliminate dangling pointer vulnerability.
+    // Signal handler now uses flag-based approach instead of direct instance access.
 };
 
-// Static member initialization
-PosixTerminal* PosixTerminal::g_active_terminal = nullptr;
+// SEC-03: Removed static member initialization - no longer needed with flag-based approach
 
 ITerminal* create_terminal() {
     return new PosixTerminal();
