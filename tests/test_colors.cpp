@@ -208,36 +208,36 @@ void test_emit_style_to_string(int* passed, int* failed) {
     std::string seq1 = emit_style_to_string(s1);
     TEST("default style sequence", seq1 == "\033[0m");
 
-    Style s2;
+    Style s2 = Style::Default();
     s2.bold = true;
     std::string seq2 = emit_style_to_string(s2);
     TEST("bold sequence contains ;1", seq2.find(";1") != std::string::npos);
     TEST("bold sequence ends with m", seq2.back() == 'm');
     TEST("bold sequence starts with esc", seq2[0] == '\033');
 
-    Style s3;
+    Style s3 = Style::Default();
     s3.italic = true;
     s3.underline = true;
     std::string seq3 = emit_style_to_string(s3);
     TEST("multiple attrs sequence", seq3.find(";3") != std::string::npos && 
                                      seq3.find(";4") != std::string::npos);
 
-    Style s4;
+    Style s4 = Style::Default();
     s4.fg = Color::Pal(9);
     std::string seq4 = emit_style_to_string(s4);
     TEST("indexed fg sequence", seq4.find(";38;5;9") != std::string::npos);
 
-    Style s5;
+    Style s5 = Style::Default();
     s5.fg = Color::RGB(255, 0, 0);
     std::string seq5 = emit_style_to_string(s5);
     TEST("truecolor fg sequence", seq5.find(";38;2;255;0;0") != std::string::npos);
 
-    Style s6;
+    Style s6 = Style::Default();
     s6.bg = Color::Pal(12);
     std::string seq6 = emit_style_to_string(s6);
     TEST("indexed bg sequence", seq6.find(";48;5;12") != std::string::npos);
 
-    Style s7;
+    Style s7 = Style::Default();
     s7.bg = Color::RGB(0, 255, 0);
     std::string seq7 = emit_style_to_string(s7);
     TEST("truecolor bg sequence", seq7.find(";48;2;0;255;0") != std::string::npos);
