@@ -105,7 +105,6 @@ inline std::string truncate(const std::string& utf8_str, size_t max_width) {
     
     // Single pass: decode and track width simultaneously
     while (p < end) {
-        const char* prev_p = p; // Save position before decoding
         char32_t ch = utf8_decode(p, end);
         if (ch == 0 && p >= end) break;
         
