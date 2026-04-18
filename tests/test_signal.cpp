@@ -89,7 +89,7 @@ void test_signal_emit_after_disconnect(int* passed, int* failed) {
     int count = 0;
 
     auto id1 = sig.connect([&]() { count++; });
-    auto id2 = sig.connect([&]() { count++; });
+    [[maybe_unused]] auto id2 = sig.connect([&]() { count++; });
 
     sig.emit();
     TEST("both called before disconnect", count == 2);
@@ -128,12 +128,12 @@ void test_signal_self_disconnect(int* passed, int* failed) {
         count++; 
     });
 
-    auto id2 = sig.connect([&]() { 
+    [[maybe_unused]] auto id2 = sig.connect([&]() { 
         count++; 
         sig.disconnect(id_to_disconnect);
     });
 
-    auto id3 = sig.connect([&]() { 
+    [[maybe_unused]] auto id3 = sig.connect([&]() { 
         count++; 
     });
 
