@@ -349,12 +349,8 @@ private:
 
 // SEC-03: Removed static member initialization - no longer needed with flag-based approach
 
-ITerminal* create_terminal() {
-    return new PosixTerminal();
-}
-
-void destroy_terminal(ITerminal* term) {
-    delete term;
+std::unique_ptr<ITerminal> create_terminal() {
+    return std::make_unique<PosixTerminal>();
 }
 
 } // namespace tui

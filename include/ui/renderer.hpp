@@ -2,9 +2,7 @@
 #define TUI_UI_RENDERER_HPP
 
 #include "platform/terminal.hpp"
-#include "core/colors.hpp"
-#include "core/rect.hpp"
-#include "core/string_utils.hpp"
+#include "core/common.hpp"
 #include <vector>
 #include <string>
 #include <memory>

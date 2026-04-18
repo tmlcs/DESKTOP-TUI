@@ -1,10 +1,7 @@
 #ifndef TUI_WINDOW_WINDOW_HPP
 #define TUI_WINDOW_WINDOW_HPP
 
-#include "core/rect.hpp"
-#include "core/event.hpp"
-#include "core/colors.hpp"
-#include "core/string_utils.hpp"
+#include "core/common.hpp"
 #include "ui/widget.hpp"
 #include "ui/panel.hpp"
 #include <string>

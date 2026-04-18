@@ -1,9 +1,7 @@
 #ifndef TUI_UI_WIDGET_HPP
 #define TUI_UI_WIDGET_HPP
 
-#include "core/rect.hpp"
-#include "core/colors.hpp"
-#include "core/event.hpp"
+#include "core/common.hpp"
 #include <string>
 #include <vector>
 #include <memory>

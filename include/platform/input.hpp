@@ -1,7 +1,8 @@
 #ifndef TUI_PLATFORM_INPUT_HPP
 #define TUI_PLATFORM_INPUT_HPP
 
-#include "core/event.hpp"
+#include "core/common.hpp"
+#include <memory>
 #include <optional>
 
 namespace tui {
@@ -27,8 +28,7 @@ public:
 };
 
 /// Factory: create the appropriate input handler for this platform
-IInput* create_input();
-void destroy_input(IInput* input);
+std::unique_ptr<IInput> create_input();
 
 } // namespace tui
 
