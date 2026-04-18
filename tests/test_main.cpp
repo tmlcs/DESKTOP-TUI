@@ -14,6 +14,7 @@ namespace tui {
     void run_signal_tests(int* passed, int* failed);
     void run_event_tests(int* passed, int* failed);
     void run_widget_tests(int* passed, int* failed);
+    void run_capability_detector_tests(int* passed, int* failed);
 }
 
 int main(int argc, char* argv[]) {
@@ -76,6 +77,12 @@ int main(int argc, char* argv[]) {
             printf("\n=== Results: %d passed, %d failed ===\n", p, f);
             return f > 0 ? 1 : 0;
         }
+        if (strcmp(argv[1], "--capability") == 0) {
+            int p = 0, f = 0;
+            tui::run_capability_detector_tests(&p, &f);
+            printf("\n=== Results: %d passed, %d failed ===\n", p, f);
+            return f > 0 ? 1 : 0;
+        }
         printf("Unknown test suite: %s\n", argv[1]);
         return 1;
     }
@@ -117,6 +124,9 @@ int main(int argc, char* argv[]) {
     
     printf("\n--- Widgets ---\n");
     tui::run_widget_tests(&total_passed, &total_failed);
+
+    printf("\n--- Capability Detector ---\n");
+    tui::run_capability_detector_tests(&total_passed, &total_failed);
     
     printf("\n=== Final Results: %d passed, %d failed ===\n", total_passed, total_failed);
     return total_failed > 0 ? 1 : 0;
