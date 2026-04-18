@@ -24,8 +24,8 @@ enum class LogLevel : int {
 
 /// Minimal header-only logger
 /// Usage: TUI_LOG(LogLevel::INFO, "Window resized to %dx%d", cols, rows);
-#define TUI_LOG(level, fmt, ...) \
-    ::tui::Logger::log(level, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define TUI_LOG(level, ...) \
+    ::tui::Logger::log_impl(level, __FILE__, __LINE__, __VA_ARGS__)
 
 class Logger {
 public:
@@ -33,8 +33,8 @@ public:
     static void set_level(LogLevel level) { instance().level_ = level; }
     static LogLevel level() { return instance().level_; }
 
-    /// Log a message if level >= current threshold
-    static void log(LogLevel level, const char* file, int line, const char* fmt, ...) {
+    /// Log a message with format string and variadic arguments
+    static void log_impl(LogLevel level, const char* file, int line, const char* fmt, ...) {
         if (level < TUI_LOG_LEVEL) return;
         if (level < instance().level_) return;
 
