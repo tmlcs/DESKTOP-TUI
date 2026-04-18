@@ -8,4 +8,5 @@ namespace tui {
     void run_thread_safety_tests();
     void run_rect_safety_tests();
     void run_desktop_manager_tests();
+    void run_braille_tests();
 }

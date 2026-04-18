@@ -14,12 +14,16 @@ add_executable(test_all
     test_signal.cpp
     test_event.cpp
     test_widgets.cpp
+    test_capability_detector.cpp
+    test_braille_renderer.cpp
     ${CMAKE_SOURCE_DIR}/src/desktop/desktop.cpp
     ${CMAKE_SOURCE_DIR}/src/desktop/desktop_manager.cpp
     ${CMAKE_SOURCE_DIR}/src/window/window.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/panel.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/renderer.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/text_input.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/capability_detector.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/braille_renderer.cpp
 )
 
 target_include_directories(test_all PRIVATE
