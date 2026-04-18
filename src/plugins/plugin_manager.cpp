@@ -29,11 +29,11 @@ std::any PluginContextImpl::get_config(const std::string& key) const {
     return std::any();
 }
 
-void PluginContextImpl::log_info(const std::string& message) {
+void PluginContextImpl::log_info(const std::string& /* message */) {
     // std::cout << "[PLUGIN INFO] " << message << std::endl;
 }
 
-void PluginContextImpl::log_warning(const std::string& message) {
+void PluginContextImpl::log_warning(const std::string& /* message */) {
     // std::cerr << "[PLUGIN WARNING] " << message << std::endl;
 }
 

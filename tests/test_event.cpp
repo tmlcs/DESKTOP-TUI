@@ -162,12 +162,12 @@ void test_eventbus_self_unsubscribe(int* passed, int* failed) {
         count++;
     });
 
-    auto id2 = bus.subscribe(EventType::KeyPress, [&](const Event&) {
+    [[maybe_unused]] auto id2 = bus.subscribe(EventType::KeyPress, [&](const Event&) {
         count++;
         bus.unsubscribe(id_to_remove);
     });
 
-    auto id3 = bus.subscribe(EventType::KeyPress, [&](const Event&) {
+    [[maybe_unused]] auto id3 = bus.subscribe(EventType::KeyPress, [&](const Event&) {
         count++;
     });
 
