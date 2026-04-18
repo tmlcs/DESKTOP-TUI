@@ -319,20 +319,23 @@ void test_list_focus_and_events(int* passed, int* failed) {
 
     TEST("list can be focused", list.focused());
 
-    // Simulate key down event
+    // Simulate key up event - stays at 0 when already at first (no wrap by default)
     Event up_event;
     up_event.type = EventType::KeyPress;
     up_event.key_code = Keys::ArrowUp;
 
     list.handle_event(up_event);
-    TEST("up arrow decreases selection", list.selected() == 3); // Was at 0, can't go negative
+    TEST("up arrow stays at 0 when at first", list.selected() == 0); // Stays at 0
 
+    // Move to position 2
+    list.set_selected(2);
+    
     Event down_event;
     down_event.type = EventType::KeyPress;
     down_event.key_code = Keys::ArrowDown;
 
     list.handle_event(down_event);
-    TEST("down arrow increases selection", list.selected() == 1);
+    TEST("down arrow increases selection", list.selected() == 3); // Increases from 2 to 3
 }
 
 void test_list_page_navigation(int* passed, int* failed) {

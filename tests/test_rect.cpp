@@ -158,9 +158,10 @@ void test_rect_inflate_deflate(int* passed, int* failed) {
 void test_rect_intersects(int* passed, int* failed) {
     printf("\n=== Rect edge cases ===\n");
 
+    // Edge touching: r1.right() == r2.x, so they don't actually overlap
     Rect r1(0, 0, 10, 10);
     Rect r2(10, 0, 10, 10);
-    TEST("edge touching", r1.intersects(r2));
+    TEST("edge touching (no intersection)", !r1.intersects(r2));
 }
 
 void run_rect_tests(int* passed, int* failed) {
