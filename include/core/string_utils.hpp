@@ -94,20 +94,21 @@ inline size_t display_width(const std::string& utf8_str) {
     return width;
 }
 
-/// Truncate UTF-8 string to display width (UTF-8 aware)
+/// Truncate UTF-8 string to display width (UTF-8 aware, single-pass)
 /// Safely handles CJK wide characters and avoids cutting mid-codepoint
+/// Optimized: Single-pass algorithm (no double traversal)
 inline std::string truncate(const std::string& utf8_str, size_t max_width) {
-    size_t dw = display_width(utf8_str);
-    if (dw <= max_width) return utf8_str;
-
     const char* p = utf8_str.data();
     const char* end = p + utf8_str.size();
     size_t width = 0;
     const char* cut = p;
+    
+    // Single pass: decode and track width simultaneously
     while (p < end) {
         const char* prev_p = p; // Save position before decoding
         char32_t ch = utf8_decode(p, end);
         if (ch == 0 && p >= end) break;
+        
         int ch_width = 0;
         if (is_wide_codepoint(ch)) {
             ch_width = 2;
@@ -116,10 +117,14 @@ inline std::string truncate(const std::string& utf8_str, size_t max_width) {
         } else {
             ch_width = 1;
         }
+        
         if (width + ch_width > max_width) break;
         width += ch_width;
         cut = p; // cut points to the next byte after this complete codepoint
     }
+    
+    // Early exit: no truncation needed
+    if (cut == end) return utf8_str;
     
     // Ensure we don't cut in the middle of a multi-byte UTF-8 sequence
     // If cut is not at a valid UTF-8 boundary, move it back

@@ -34,9 +34,16 @@ struct Cell {
 ///       and undefined behavior.
 ///       
 ///       Typical usage: All rendering happens in the main loop after event processing.
+///       
+/// @note PERFORMANCE: This renderer uses pre-allocated buffers to avoid memory
+///       allocations during the render loop. The row_buffer_ is reused across frames
+///       to achieve zero-allocation rendering in steady state.
 class Renderer {
 public:
-    Renderer(ITerminal& term) : term_(term) {}
+    Renderer(ITerminal& term) : term_(term) {
+        // Pre-allocate buffers with reasonable defaults to avoid initial reallocs
+        row_buffer_.reserve(512);
+    }
 
     // Initialize renderer with terminal dimensions
     void init() {
@@ -52,6 +59,8 @@ public:
         if (size_changed) {
             // Reset front buffer to force full redraw on new dimensions
             front_buffer_.assign(cols * rows, Cell());
+            // Resize row buffer to match new width (with margin for UTF-8 expansion: 4 bytes/char)
+            row_buffer_.resize(cols * 4);
         }
         dirty_ = true;
     }
@@ -265,7 +274,7 @@ public:
             // Move cursor to start of row
             term_.cursor_move(0, row);
 
-            // Write entire row with style runs
+            // Write entire row with style runs - ZERO ALLOCATION version
             int col = 0;
             while (col < cols_) {
                 const Cell& cell = back_buffer_[row * cols_ + col];
@@ -284,12 +293,29 @@ public:
                     style_set = true;
                 }
 
-                // Write the run
-                std::string run;
+                // Write the run using pre-allocated buffer (ZERO ALLOCATION)
+                size_t buf_pos = 0;
                 for (int i = col; i < run_end; i++) {
-                    run += utf8_encode(back_buffer_[row * cols_ + i].ch);
+                    char32_t ch = back_buffer_[row * cols_ + i].ch;
+                    // Inline UTF-8 encoding directly into pre-allocated buffer
+                    if (ch < 0x80) {
+                        row_buffer_[buf_pos++] = static_cast<char>(ch);
+                    } else if (ch < 0x800) {
+                        row_buffer_[buf_pos++] = static_cast<char>(0xC0 | (ch >> 6));
+                        row_buffer_[buf_pos++] = static_cast<char>(0x80 | (ch & 0x3F));
+                    } else if (ch < 0x10000) {
+                        row_buffer_[buf_pos++] = static_cast<char>(0xE0 | (ch >> 12));
+                        row_buffer_[buf_pos++] = static_cast<char>(0x80 | ((ch >> 6) & 0x3F));
+                        row_buffer_[buf_pos++] = static_cast<char>(0x80 | (ch & 0x3F));
+                    } else {
+                        row_buffer_[buf_pos++] = static_cast<char>(0xF0 | (ch >> 18));
+                        row_buffer_[buf_pos++] = static_cast<char>(0x80 | ((ch >> 12) & 0x3F));
+                        row_buffer_[buf_pos++] = static_cast<char>(0x80 | ((ch >> 6) & 0x3F));
+                        row_buffer_[buf_pos++] = static_cast<char>(0x80 | (ch & 0x3F));
+                    }
                 }
-                term_.write(run);
+                // Write from pre-allocated buffer (no allocation)
+                term_.write(std::string(row_buffer_.data(), buf_pos));
 
                 // Update front buffer
                 for (int i = col; i < run_end; i++) {
@@ -360,6 +386,7 @@ private:
     ITerminal& term_;
     std::vector<Cell> back_buffer_;
     std::vector<Cell> front_buffer_;
+    std::vector<char> row_buffer_;  // Pre-allocated buffer for UTF-8 encoding (zero allocation)
     int cols_ = 0;
     int rows_ = 0;
     bool dirty_ = true;

@@ -1,31 +1,59 @@
 ```
-# Build directories
-build-asan/
-build-sanitize/
-build-sanitizer/
-build-sanitizers/
+# Build artifacts
+build/
+dist/
 
-# CMake generated files
-CMakeCache.txt
-CMakeFiles/
-Makefile
-cmake_install.cmake
-CTestTestfile.cmake
+# Dependencies
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.egg-info/
 
-# Executables
-desktop-tui
-plugin_demo
-
-# Dynamic libraries
-*.so
-generated/
-
-# Doxygen documentation
-docs/html/
+# Editors
+.vscode/
+.idea/
 
 # Logs
-doxygen_warnings.log
+*.log
 
-# Generated headers
-build-sanitizer/generated/
+# Environment
+.env
+.env.local
+*.env.*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Python specific
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Backup files
+*.bak
+*.swp
+*.swo
+
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
+
+# Testing
+.pytest_cache/
+.mypy_cache/
+
+# Compressed files
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
 ```
