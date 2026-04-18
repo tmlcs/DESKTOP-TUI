@@ -1,10 +1,10 @@
 #ifndef TUI_PLATFORM_TERMINAL_HPP
 #define TUI_PLATFORM_TERMINAL_HPP
 
-#include "core/colors.hpp"
-#include "core/rect.hpp"
+#include "core/common.hpp"
 #include <string>
 #include <cstdint>
+#include <memory>
 
 namespace tui {
 
@@ -106,8 +106,7 @@ public:
 };
 
 /// Factory: create the appropriate terminal for this platform
-ITerminal* create_terminal();
-void destroy_terminal(ITerminal* term);
+std::unique_ptr<ITerminal> create_terminal();
 
 } // namespace tui
 
