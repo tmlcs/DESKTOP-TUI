@@ -18,7 +18,7 @@ char32_t BrailleRenderer::bits_to_braille(const bool pixels[4][2]) {
     return static_cast<char32_t>(BRAILLE_BASE + value);
 }
 
-std::string BrailleRenderer::render_image(int width, int height, const uint8_t* pixels, const Config& config) {
+std::string BrailleRenderer::render_image(int width, int height, const uint8_t* pixels, const Config& /*config*/) {
     if (!pixels || width <= 0 || height <= 0) {
         return "";
     }
