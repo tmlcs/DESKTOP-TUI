@@ -29,6 +29,8 @@ set(CORE_SOURCES
     include/core/colors.hpp
     include/core/string_utils.hpp
     include/core/logger.hpp
+    include/core/theme.hpp
+    src/core/theme.cpp
 )
 
 # Platform sources
@@ -63,6 +65,7 @@ set(UI_SOURCES
     include/ui/border.hpp
     include/ui/list.hpp
     include/ui/text_input.hpp
+    include/ui/context_menu.hpp
     src/ui/text_input.cpp
 )
 
