@@ -392,12 +392,8 @@ private:
     bool in_bracketed_paste_ = false;  // SEC-01: Track bracketed paste state
 };
 
-IInput* create_input() {
-    return new PosixInput();
-}
-
-void destroy_input(IInput* input) {
-    delete input;
+std::unique_ptr<IInput> create_input() {
+    return std::make_unique<PosixInput>();
 }
 
 } // namespace tui

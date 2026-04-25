@@ -5,12 +5,9 @@
 ///
 /// Single include entry point. Include this header to access all TUI components.
 
-// Core
-#include "core/event.hpp"
+// Core (consolidated via common.hpp)
+#include "core/common.hpp"
 #include "core/signal.hpp"
-#include "core/rect.hpp"
-#include "core/colors.hpp"
-#include "core/string_utils.hpp"
 
 // Platform
 #include "platform/terminal.hpp"

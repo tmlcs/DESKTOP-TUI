@@ -123,33 +123,42 @@ namespace Styles {
 }
 
 /// DRY: Generate ANSI escape sequence for a Style (shared across all terminals)
+/// @note PERFORMANCE: Uses pre-allocated buffer to avoid string allocations in hot path
 inline std::string emit_style_to_string(const Style& style) {
-    std::string seq = "\033[0"; // reset first
+    // Pre-allocate buffer: max ANSI sequence is ~60 bytes (true color fg+bg + attributes)
+    char buffer[72];
+    int pos = 0;
+    
+    buffer[pos++] = '\033';
+    buffer[pos++] = '[';
+    buffer[pos++] = '0'; // reset first
 
-    if (style.bold)      seq += ";1";
-    if (style.dim)       seq += ";2";
-    if (style.italic)    seq += ";3";
-    if (style.underline) seq += ";4";
-    if (style.blink)     seq += ";5";
-    if (style.reverse)   seq += ";7";
-    if (style.hidden)    seq += ";8";
+    if (style.bold)      { buffer[pos++] = ';'; buffer[pos++] = '1'; }
+    if (style.dim)       { buffer[pos++] = ';'; buffer[pos++] = '2'; }
+    if (style.italic)    { buffer[pos++] = ';'; buffer[pos++] = '3'; }
+    if (style.underline) { buffer[pos++] = ';'; buffer[pos++] = '4'; }
+    if (style.blink)     { buffer[pos++] = ';'; buffer[pos++] = '5'; }
+    if (style.reverse)   { buffer[pos++] = ';'; buffer[pos++] = '7'; }
+    if (style.hidden)    { buffer[pos++] = ';'; buffer[pos++] = '8'; }
 
     if (style.fg.mode == Color::Mode::TrueColor) {
-        seq += ";38;2;" + std::to_string(style.fg.rgb.r) + ";" +
-               std::to_string(style.fg.rgb.g) + ";" + std::to_string(style.fg.rgb.b);
+        pos += std::snprintf(buffer + pos, sizeof(buffer) - pos, ";38;2;%u;%u;%u",
+                            style.fg.rgb.r, style.fg.rgb.g, style.fg.rgb.b);
     } else if (style.fg.mode == Color::Mode::Indexed) {
-        seq += ";38;5;" + std::to_string(style.fg.index);
+        pos += std::snprintf(buffer + pos, sizeof(buffer) - pos, ";38;5;%u", style.fg.index);
     }
 
     if (style.bg.mode == Color::Mode::TrueColor) {
-        seq += ";48;2;" + std::to_string(style.bg.rgb.r) + ";" +
-               std::to_string(style.bg.rgb.g) + ";" + std::to_string(style.bg.rgb.b);
+        pos += std::snprintf(buffer + pos, sizeof(buffer) - pos, ";48;2;%u;%u;%u",
+                            style.bg.rgb.r, style.bg.rgb.g, style.bg.rgb.b);
     } else if (style.bg.mode == Color::Mode::Indexed) {
-        seq += ";48;5;" + std::to_string(style.bg.index);
+        pos += std::snprintf(buffer + pos, sizeof(buffer) - pos, ";48;5;%u", style.bg.index);
     }
 
-    seq += "m";
-    return seq;
+    buffer[pos++] = 'm';
+    buffer[pos] = '\0';
+    
+    return std::string(buffer, pos);
 }
 
 } // namespace tui

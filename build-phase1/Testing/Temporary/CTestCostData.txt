@@ -1,0 +1,8 @@
+string_utils 3 0.00561144
+renderer 3 0.000903313
+critical_fixes 1 0.605519
+thread_safety 3 0.00164078
+rect_safety 3 0.000762845
+desktop_manager 3 0.00114733
+all 1 0.607472
+---

@@ -23,6 +23,8 @@ public:
         if (idx >= 0 && idx < static_cast<int>(items_.size())) {
             selected_ = idx;
             ensure_visible();
+            // Trigger callback when selection is changed programmatically
+            if (on_select_) on_select_(selected_);
         }
     }
 

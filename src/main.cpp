@@ -56,7 +56,7 @@ public:
         });
 
         // Initialize terminal
-        if (!term_->init()) {
+        if (!term_ || !term_->init()) {
             std::cerr << "Failed to initialize terminal\n";
             return false;
         }
@@ -67,7 +67,9 @@ public:
         term_->set_title("Desktop TUI");
 
         // Initialize input
-        input_->init();
+        if (input_) {
+            input_->init();
+        }
 
         // Initialize renderer
         renderer_.init();
@@ -90,12 +92,10 @@ public:
             term_->leave_raw_mode();
             term_->leave_alternate_screen();
             term_->shutdown();
-            destroy_terminal(term_);
-            term_ = nullptr;
+            term_.reset();
         }
         if (input_) {
-            destroy_input(input_);
-            input_ = nullptr;
+            input_.reset();
         }
     }
 
@@ -363,8 +363,8 @@ private:
         }
     }
 
-    ITerminal* term_;
-    IInput* input_;
+    std::unique_ptr<ITerminal> term_;
+    std::unique_ptr<IInput> input_;
     Renderer renderer_;
     DesktopManager desktop_mgr_;
 };

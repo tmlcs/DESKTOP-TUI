@@ -10,7 +10,7 @@ void test_switch_to_negative_index() {
     dm.add_desktop("Desktop 3");
     
     // P0: Should return false for negative index
-    bool result = dm.switch_to(-1);
+    [[maybe_unused]] bool result = dm.switch_to(-1);
     assert(!result);
     assert(dm.active_index() == 0);  // Should remain on first desktop
     std::cout << "✓ Negative index switch test passed" << std::endl;
@@ -21,7 +21,7 @@ void test_switch_to_out_of_bounds() {
     dm.add_desktop("Desktop 2");
     
     // P0: Should return false for out-of-bounds index
-    bool result = dm.switch_to(10);
+    [[maybe_unused]] bool result = dm.switch_to(10);
     assert(!result);
     assert(dm.active_index() == 0);  // Should remain on first desktop
     std::cout << "✓ Out-of-bounds index switch test passed" << std::endl;
@@ -32,7 +32,7 @@ void test_switch_to_valid_index() {
     dm.add_desktop("Desktop 2");
     dm.add_desktop("Desktop 3");
     
-    bool result = dm.switch_to(1);
+    [[maybe_unused]] bool result = dm.switch_to(1);
     assert(result);
     assert(dm.active_index() == 1);
     assert(dm.active_desktop()->name() == "Desktop 2");

@@ -99,7 +99,7 @@ public:
      * @return Resultado del comando
      */
     virtual PluginResult handle_command(const std::string& command, 
-                                       const std::vector<std::string>& args) {
+                                       const std::vector<std::string>& /* args */) {
         return PluginResult::fail("Command not implemented: " + command);
     }
 };
