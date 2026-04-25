@@ -1,36 +1,111 @@
-```
 # Build artifacts
 build/
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+*.dylib
+
+# CMake cache
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+makefile
+*.ncb
+*.sln
+*.iws
+
+# Compiled binaries
+bin/
 dist/
+release/
+debug/
 
-# Dependencies
-node_modules/
-.venv/
-venv/
-__pycache__/
-*.egg-info/
+# Debug/sanitizers
+build-asan/
+build-ubsan/
+build-sanitize/
+build-sanitizer/
+build-sanitizers/
+build-test/
+build-phase2/
 
-# Editor/IDE files
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*.tmp
+*~
+*.project
+*.code-workspace
 
-# Logs
-*.log
+# Editor temp files
+*~
+*.rej
+*.bak
+*.orig
 
 # Environment
 .env
-.env.local
-*.env.*
+.env.*
+.pyenv-version
 
-# Coverage
-coverage/
-htmlcov/
-.coverage
+# Logs
+*.log
+npm-debug.log
+yarn-debug.log
+yarn-error.log
 
-# OS generated files
+# OS specific
 .DS_Store
 Thumbs.db
-```
+ehthumbs.db
+Desktop.ini
+
+# Package manager lockfiles (if using)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Test coverage
+coverage/
+htmlcov/
+.nox/
+.coverage
+coverage.xml
+
+# Python (if present)
+venv/
+.venv/
+env/
+.env/
+*.pyc
+__pycache__/
+*.py[cod]
+pyenv/
+
+# Virtual environment
+node_modules/
+venv/
+.venv/
+
+# Docker
+docker-compose.override.yml
+
+# IPFS
+*.ipfs
+*.arweave
+
+# Backup configs
+*.bak
+*.backup
+
+# Temp files
+*.tmp
+*.temp
+*.cache

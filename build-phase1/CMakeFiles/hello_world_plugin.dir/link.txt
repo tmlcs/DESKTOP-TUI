@@ -1,1 +1,0 @@
-/usr/bin/c++ -fPIC -O3 -DNDEBUG -shared -Wl,-soname,libhello_world.so -o libhello_world.so CMakeFiles/hello_world_plugin.dir/examples/plugins/hello_world_plugin.cpp.o 

@@ -1,2 +1,1 @@
-// DesktopManager implementation (header-only)
-#include "desktop/desktop_manager.hpp"
+// desktop_manager.hpp is header-only

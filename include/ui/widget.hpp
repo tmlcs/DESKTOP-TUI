@@ -57,6 +57,7 @@ protected:
 
     void emit_click() { if (on_click_) on_click_(); }
 
+protected:
     Rect bounds_;
     bool visible_ = true;
     bool focused_ = false;

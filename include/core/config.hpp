@@ -78,6 +78,63 @@ struct Config {
     
     /// Enable double buffering
     static constexpr bool ENABLE_DOUBLE_BUFFERING = true;
+
+    // ========================================================================
+    // Resize Handle Configuration
+    // ========================================================================
+
+    /// Resize handle width (right side)
+    static constexpr int RESIZE_HANDLE_RIGHT = 2;
+
+    /// Resize handle height (bottom side)
+    static constexpr int RESIZE_HANDLE_BOTTOM = 2;
+
+    // ========================================================================
+    // Window Tiling Configuration
+    // ========================================================================
+
+    /// Enable window tiling (snap-to-edge)
+    static constexpr bool ENABLE_TILING = true;
+
+    /// Snap threshold in pixels for edge detection
+    static constexpr int SNAP_THRESHOLD = 10;
+
+    /// Minimum tiles per desktop
+    static constexpr int MIN_TILES_PER_DESKTOP = 1;
+
+    /// Maximum tiles per desktop
+    static constexpr int MAX_TILES_PER_DESKTOP = 4;
+
+    /// Tiling modes: none, quarter, half, vertical, horizontal
+    enum class TileMode {
+        None = 0,      // No tiling
+        Quarter = 1,   // 4 equal quadrants
+        Half = 2,      // 2 halves (horizontal or vertical)
+        Vertical = 3,  // Vertical split (left/right)
+        Horizontal = 4 // Horizontal split (top/bottom)
+    };
+
+    /// Default tiling mode
+    static constexpr TileMode DEFAULT_TILE_MODE = TileMode::Vertical;
+
+    /// Default tile gap between windows
+    static constexpr int DEFAULT_TILE_GAP = 1;
+
+    /// Enable automatic tile adjustment when windows are added/removed
+    static constexpr bool ENABLE_AUTO_TILE_ADJUST = true;
+
+    // ========================================================================
+    // Context Menu Configuration
+    // ========================================================================
+
+    /// Enable context menus
+    static constexpr bool ENABLE_CONTEXT_MENU = true;
+
+    /// Default context menu width
+    static constexpr int CONTEXT_MENU_WIDTH = 18;
+
+    /// Maximum context menu width
+    static constexpr int MAX_CONTEXT_MENU_WIDTH = 40;
 };
 
 } // namespace tui

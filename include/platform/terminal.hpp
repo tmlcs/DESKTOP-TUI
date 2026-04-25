@@ -103,6 +103,12 @@ public:
         (void)new_cols; (void)new_rows;
         return false;
     }
+
+    // CRIT-02: Check for pending escape key (platform-specific)
+    // Default implementation returns false (no escape key tracking)
+    virtual bool is_escape_pending() const {
+        return false;
+    }
 };
 
 /// Factory: create the appropriate terminal for this platform
