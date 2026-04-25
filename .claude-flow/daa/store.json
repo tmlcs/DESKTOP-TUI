@@ -1,0 +1,36 @@
+{
+  "agents": {},
+  "workflows": {
+    "project-workflow-17766": {
+      "id": "project-workflow-17766",
+      "name": "Desktop TUI v0.3.1 Implementation Workflow",
+      "status": "pending",
+      "steps": [
+        {
+          "name": "Step 1",
+          "status": "pending"
+        },
+        {
+          "name": "Step 2",
+          "status": "pending"
+        },
+        {
+          "name": "Step 3",
+          "status": "pending"
+        },
+        {
+          "name": "Step 4",
+          "status": "pending"
+        },
+        {
+          "name": "Step 5",
+          "status": "pending"
+        }
+      ],
+      "strategy": "adaptive",
+      "createdAt": "2026-04-19T13:42:47.227Z"
+    }
+  },
+  "knowledge": {},
+  "version": "3.0.0"
+}

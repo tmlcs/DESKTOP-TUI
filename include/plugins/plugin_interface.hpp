@@ -6,6 +6,7 @@
 #include <functional>
 #include <unordered_map>
 #include <any>
+#include <cstdint>
 
 namespace desktop_tui {
 
@@ -24,6 +25,61 @@ enum class PluginState {
     Running,
     Stopped,
     Error
+};
+
+/**
+ * @brief Capabilities que puede solicitar un plugin
+ *
+ * Los plugins solicitan capabilities durante la inicialización.
+ * El PluginManager decide qué capabilities conceder basándose en la configuración.
+ */
+enum class Capability : uint32_t {
+    None = 0,                    // Plugin sin capabilities (sandboxing estricto)
+    ReadConfig = 1 << 0,        // Leer configuración del host
+    WriteConfig = 1 << 1,       // Modificar configuración del host
+    SpawnProcess = 1 << 2,      // Lanzar procesos externos
+    AccessClipboard = 1 << 3,   // Leer/escribir clipboard
+    AccessNetwork = 1 << 4,     // Acceso a red
+    AccessFiles = 1 << 5,       // Acceso al sistema de archivos
+    AccessHardware = 1 << 6,    // Acceso a hardware (GPU, audio, etc.)
+    All = 0xFFFFFFFF             // Todas las capabilities (desandboxeado)
+};
+
+/**
+ * @brief Detecta y valida las capabilities solicitadas por un plugin
+ *
+ * Esta clase verifica que las capabilities solicitadas sean válidas
+ * y reporta cualquier capability no reconocida.
+ */
+class CapabilityDetector {
+public:
+    /**
+     * @brief Detecta capabilities en un string de capabilities
+     * @param capabilities String con capabilities separadas por comas o espacios
+     * @return bitmask de capabilities detectadas
+     */
+    static uint32_t detect_capabilities(const std::string& capabilities);
+
+    /**
+     * @brief Verifica si un capability es válido
+     * @param capability Capability a verificar
+     * @return true si es válido, false si no
+     */
+    static bool is_valid_capability(Capability capability);
+
+    /**
+     * @brief Obtiene el nombre de string de un capability
+     * @param capability Capability
+     * @return Nombre de string del capability
+     */
+    static std::string capability_name(Capability capability);
+
+    /**
+     * @brief Obtiene una descripción de las capabilities detectadas
+     * @param capabilities bitmask de capabilities
+     * @return Descripción de string
+     */
+    static std::string describe_capabilities(uint32_t capabilities);
 };
 
 /**

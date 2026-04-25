@@ -226,6 +226,24 @@ private:
                 return true;
             }
 
+            // F11: maximize/restore focused window
+            if (e.key_code == Keys::F11 || e.key_name == "F11") {
+                auto* active = desktop_mgr_.active_desktop();
+                if (active) {
+                    for (auto& win : active->windows()) {
+                        if (win->is_focused()) {
+                            if (win->is_maximized()) {
+                                win->restore_maximized();
+                            } else {
+                                win->maximize();
+                            }
+                            break;
+                        }
+                    }
+                }
+                return true;
+            }
+
             // FIX C5: Alt+R restore minimized windows
             if (e.mods.alt && (e.key_code == 'R' || e.key_code == 'r')) {
                 auto* active = desktop_mgr_.active_desktop();
@@ -247,6 +265,89 @@ private:
             renderer_.resize(e.cols, e.rows);
             desktop_mgr_.on_resize(e.cols, e.rows);
             renderer_.mark_dirty();
+            return true;
+        }
+
+        // Mouse events - handle window dragging and resizing
+        if (e.type == EventType::MouseDown) {
+            auto* active = desktop_mgr_.active_desktop();
+            if (active) {
+                // Find focused window
+                for (auto& win : active->windows()) {
+                    if (win->is_focused() && win->visible()) {
+                        // Check if clicking on resize handle
+                        int mx = e.mouse_x, my = e.mouse_y;
+                        bool on_handle = false;
+
+                        // Right handle (last 2 columns, bottom row)
+                        if (win->bounds().w > 20 && mx >= win->bounds().x + win->bounds().w - 2 && my >= win->bounds().y && my < win->bounds().y + win->bounds().h) {
+                            on_handle = true;
+                            win->start_resize(1);
+                        }
+                        // Bottom handle (last row, left 2 columns)
+                        else if (win->bounds().h > 5 && mx >= win->bounds().x && mx < win->bounds().x + win->bounds().w - 2 && my >= win->bounds().y + win->bounds().h - 1) {
+                            on_handle = true;
+                            win->start_resize(2);
+                        }
+                        // Both handles (corner)
+                        else if (win->bounds().w > 20 && win->bounds().h > 5 && mx >= win->bounds().x + win->bounds().w - 2 && my >= win->bounds().y + win->bounds().h - 1) {
+                            on_handle = true;
+                            win->start_resize(3);
+                        }
+
+                        if (on_handle) {
+                            return true;
+                        }
+
+                        // Otherwise start dragging
+                        if (win->is_dragging() == false) {
+                            win->start_drag();
+                            win->set_drag_offset(e.mouse_x - win->bounds_x(), e.mouse_y - win->bounds_y());
+                        }
+                        break;
+                    }
+                }
+            }
+            return true;
+        }
+
+        if (e.type == EventType::MouseMove) {
+            // Update mouse position for dragging or resizing
+            auto* active = desktop_mgr_.active_desktop();
+            if (active) {
+                for (auto& win : active->windows()) {
+                    if (win->is_dragging()) {
+                        win->move(e.mouse_x - win->drag_offset_x(), e.mouse_y - win->drag_offset_y());
+                        return true;
+                    }
+                    if (win->is_resizing()) {
+                        if (win->resize_dir() & 1) {
+                            win->set_bounds_w(e.mouse_x - win->bounds_x() + 1);
+                        }
+                        if (win->resize_dir() & 2) {
+                            win->set_bounds_h(e.mouse_y - win->bounds_y() + 1);
+                        }
+                        return true;
+                    }
+                }
+            }
+            return true;
+        }
+
+        if (e.type == EventType::MouseUp) {
+            auto* active = desktop_mgr_.active_desktop();
+            if (active) {
+                for (auto& win : active->windows()) {
+                    if (win->is_dragging()) {
+                        win->end_drag();
+                        return true;
+                    }
+                    if (win->is_resizing()) {
+                        win->end_resize();
+                        return true;
+                    }
+                }
+            }
             return true;
         }
 
@@ -296,6 +397,17 @@ private:
 
         // Desktop indicator (workspace dots)
         desktop_mgr_.render_indicator(renderer_, rows - 1);
+
+        // Maximize indicator
+        if (active) {
+            for (auto& win : active->windows()) {
+                if (win->is_maximized()) {
+                    status += " [Maximized] ";
+                    break;
+                }
+            }
+        }
+        renderer_.write(0, rows - 1, status, status_style);
 
         // Render active desktop windows
         desktop_mgr_.render_active_desktop(renderer_);

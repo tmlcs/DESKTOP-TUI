@@ -23,8 +23,8 @@ struct Rect {
     int x, y, w, h;
 
     Rect() : x(0), y(0), w(0), h(0) {}
-    Rect(int x_, int y_, int w_, int h_) : x(x_), y(y_), w(w_), h(h_) {}
-    Rect(Point pos, int w_, int h_) : x(pos.x), y(pos.y), w(w_), h(h_) {}
+    Rect(int x_, int y_, int w_, int h_) : x(x_), y(y_), w(std::max(0, w_)), h(std::max(0, h_)) {}
+    Rect(Point pos, int w_, int h_) : x(pos.x), y(pos.y), w(std::max(0, w_)), h(std::max(0, h_)) {}
 
     int left()   const { return x; }
     int top()    const { return y; }
@@ -89,6 +89,7 @@ struct Rect {
     }
 
     bool empty() const { return w <= 0 || h <= 0; }
+    bool is_valid() const { return w > 0 && h > 0; }
 };
 
 } // namespace tui

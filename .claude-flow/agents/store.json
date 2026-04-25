@@ -1,0 +1,50 @@
+{
+  "agents": {
+    "agent-1776606268708-brd5hx": {
+      "agentId": "agent-1776606268708-brd5hx",
+      "agentType": "worker",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {},
+      "createdAt": "2026-04-19T13:44:28.708Z"
+    },
+    "agent-1776606268708-5igy4m": {
+      "agentId": "agent-1776606268708-5igy4m",
+      "agentType": "worker",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {},
+      "createdAt": "2026-04-19T13:44:28.708Z"
+    },
+    "agent-1776606268708-1imnjv": {
+      "agentId": "agent-1776606268708-1imnjv",
+      "agentType": "worker",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {},
+      "createdAt": "2026-04-19T13:44:28.708Z"
+    },
+    "agent-1776606268708-uppwus": {
+      "agentId": "agent-1776606268708-uppwus",
+      "agentType": "worker",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {},
+      "createdAt": "2026-04-19T13:44:28.708Z"
+    },
+    "agent-1776606268708-r6zs1b": {
+      "agentId": "agent-1776606268708-r6zs1b",
+      "agentType": "worker",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {},
+      "createdAt": "2026-04-19T13:44:28.708Z"
+    }
+  },
+  "version": "3.0.0"
+}

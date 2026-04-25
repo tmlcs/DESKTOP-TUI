@@ -3,6 +3,7 @@
 
 #include "desktop.hpp"
 #include "ui/renderer.hpp"
+#include "ui/label.hpp"
 #include <vector>
 #include <memory>
 #include <string>
@@ -12,6 +13,18 @@
 namespace tui {
 
 /// Manages multiple virtual desktops
+///
+/// @note OWNERSHIP MODEL:
+///       - DesktopManager owns desktops via std::vector<std::shared_ptr<Desktop>>
+///       - Desktop owns windows via std::vector<std::shared_ptr<Window>>
+///       - DesktopManager creates and owns Desktop instances
+///       - Each Desktop owns its windows
+///       - When a Desktop is removed, its windows are transferred to the active Desktop
+///       - This ownership model ensures proper cleanup and prevents dangling pointers
+///
+///       DesktopManager creates and owns Desktop instances.
+///       Each Desktop owns its windows.
+///       When a Desktop is removed, its windows are transferred to the active Desktop.
 class DesktopManager {
 public:
     using DesktopPtr = std::shared_ptr<Desktop>;
@@ -171,8 +184,18 @@ public:
     // Render all windows on the active desktop
     void render_active_desktop(Renderer& r) {
         if (active_) {
+            // FIX C6: Draw modal windows first (on top), then regular windows
+            // Modal windows should always be drawn last (on top) in normal order
+            // But we want modals to overlay everything, so draw them last
             for (auto& win : active_->windows()) {
                 if (win->visible()) {
+                    win->render(r);
+                }
+            }
+            // FIX C6: If a modal is open, draw it last to ensure proper overlay
+            for (auto& win : active_->windows()) {
+                if (win->visible() && win->is_modal()) {
+                    // Re-render modal to ensure it's on top
                     win->render(r);
                 }
             }

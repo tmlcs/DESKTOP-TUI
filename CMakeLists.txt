@@ -54,13 +54,11 @@ else()
     )
 endif()
 
-# UI sources
+# UI sources (headers only - included from include/)
 set(UI_SOURCES
     include/ui/renderer.hpp
-    src/ui/renderer.cpp
     include/ui/widget.hpp
     include/ui/panel.hpp
-    src/ui/panel.cpp
     include/ui/label.hpp
     include/ui/border.hpp
     include/ui/list.hpp
@@ -68,7 +66,7 @@ set(UI_SOURCES
     src/ui/text_input.cpp
 )
 
-# Desktop sources
+# Desktop sources (headers only)
 set(DESKTOP_SOURCES
     include/desktop/desktop.hpp
     src/desktop/desktop.cpp
@@ -76,10 +74,9 @@ set(DESKTOP_SOURCES
     src/desktop/desktop_manager.cpp
 )
 
-# Window sources
+# Window sources (headers only)
 set(WINDOW_SOURCES
     include/window/window.hpp
-    src/window/window.cpp
 )
 
 # Plugin sources (optional)
@@ -90,14 +87,27 @@ if(ENABLE_PLUGINS)
         src/plugins/dynamic_plugin.cpp
         include/plugins/plugin_manager.hpp
         src/plugins/plugin_manager.cpp
+        src/plugins/capability_detector.cpp
     )
     add_compile_definitions(TUI_PLUGINS_ENABLED)
+else()
+    set(PLUGIN_SOURCES)
 endif()
 
 # Main
 set(MAIN_SOURCES
     src/main.cpp
 )
+
+# Sample applications
+option(ENABLE_SAMPLES "Build sample applications" OFF)
+if(ENABLE_SAMPLES)
+    add_executable(sample_hello apps/demo_hello.cpp)
+    target_include_directories(sample_hello PRIVATE
+        ${CMAKE_SOURCE_DIR}/src
+        ${CMAKE_SOURCE_DIR}/include
+    )
+endif()
 
 # Executable
 add_executable(${PROJECT_NAME}
@@ -129,7 +139,7 @@ endif()
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 
 # --- Options ---
-option(ENABLE_TESTS "Build unit tests" OFF)
+option(ENABLE_TESTS "Build unit tests" ON)
 option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
 option(ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer" OFF)
 
@@ -165,7 +175,7 @@ if(ENABLE_PLUGINS)
         PREFIX "lib"
         OUTPUT_NAME "hello_world"
     )
-    
+
     # Plugin demo application
     add_executable(plugin_demo
         examples/plugins/demo_plugins.cpp

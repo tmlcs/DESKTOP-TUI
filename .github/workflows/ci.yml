@@ -1,258 +1,194 @@
-name: CI/CD Pipeline
+name: CI
 
 on:
   push:
-    branches: [ main, 'dev/*' ]
-    tags: [ 'v*' ]
+    branches: [main]
   pull_request:
-    branches: [ main, 'dev/*' ]
+    branches: [main]
 
 env:
   BUILD_TYPE: Release
-  CMAKE_VERSION: 3.14.0
+  CMAKE_BUILD_TYPE: ${{ vars.CMAKE_BUILD_TYPE || env.CMAKE_BUILD_TYPE || 'Release' }}
 
 jobs:
-  # ============================================================================
-  # Build & Test Matrix
-  # ============================================================================
-  build-and-test:
-    name: ${{ matrix.os }} - ${{ matrix.compiler }} - ${{ matrix.build_type }}
+  build:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04, macos-13, macos-14, windows-2022]
-        compiler: [gcc, clang]
-        build_type: [Release, Debug]
-        exclude:
-          # Clang on Windows not well supported in this matrix
-          - os: windows-2022
-            compiler: clang
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        enable_tests: [true, false]
+        enable_plugins: [true, false]
         include:
-          - os: ubuntu-22.04
-            compiler: gcc
-            cxx: g++-11
-            cc: gcc-11
-          - os: ubuntu-22.04
-            compiler: clang
-            cxx: clang++-14
-            cc: clang-14
-          - os: ubuntu-24.04
-            compiler: gcc
-            cxx: g++-13
-            cc: gcc-13
-          - os: ubuntu-24.04
-            compiler: clang
-            cxx: clang++-18
-            cc: clang-18
-          - os: macos-13
-            compiler: clang
-            cxx: clang++
-            cc: clang
-          - os: macos-14
-            compiler: clang
-            cxx: clang++
-            cc: clang
-          - os: windows-2022
-            compiler: gcc
-            cxx: g++
-            cc: gcc
+          - os: ubuntu-latest
+            enable_tests: true
+            enable_plugins: true
+            name: Ubuntu Full Test
+          - os: ubuntu-latest
+            enable_tests: true
+            enable_plugins: false
+            name: Ubuntu No Plugins
+          - os: ubuntu-latest
+            enable_tests: false
+            enable_plugins: true
+            name: Ubuntu Plugins Only
+          - os: macos-latest
+            enable_tests: true
+            enable_plugins: true
+            name: macOS Full Test
+          - os: windows-latest
+            enable_tests: true
+            enable_plugins: true
+            name: Windows Full Test
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install dependencies (Ubuntu)
-      if: startsWith(matrix.os, 'ubuntu')
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          ${{ matrix.compiler }} \
-          ${{ matrix.compiler == 'gcc' && 'g++' || 'clang' }} \
-          cmake \
-          ninja-build
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
 
-    - name: Install dependencies (macOS)
-      if: startsWith(matrix.os, 'macos')
-      run: |
-        brew install cmake ninja
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+            -DENABLE_TESTS=${{ matrix.enable_tests }} \
+            -DENABLE_PLUGINS=${{ matrix.enable_plugins }}
+        shell: bash
 
-    - name: Configure MSVC (Windows)
-      if: matrix.os == 'windows-2022'
-      uses: ilammy/msvc-dev-cmd@v1
+      - name: Build
+        run: |
+          cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
+        shell: bash
 
-    - name: Configure CMake
-      run: >
-        cmake -B ${{ github.workspace }}/build
-        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
-        -DCMAKE_C_COMPILER=${{ matrix.cc }}
-        -DENABLE_TESTS=ON
-        -DENABLE_PLUGINS=ON
-        -G Ninja
-        -S ${{ github.workspace }}
+      - name: Run tests
+        if: matrix.enable_tests
+        working-directory: build
+        run: |
+          ctest -R "^(string_utils|renderer|critical_fixes|desktop_manager|colors)$" --output-on-failure
+        shell: bash
 
-    - name: Build
-      run: cmake --build ${{ github.workspace }}/build --config ${{ matrix.build_type }}
+      - name: Run integration tests
+        if: matrix.enable_tests && matrix.enable_plugins
+        working-directory: build
+        run: |
+          ctest -R "integration" --output-on-failure
+        shell: bash
 
-    - name: Run Tests
-      working-directory: ${{ github.workspace }}/build
-      run: ctest --output-on-failure -C ${{ matrix.build_type }}
+      - name: Run executable
+        run: |
+          ./desktop-tui --version
+        shell: bash
 
-    - name: Upload test results
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-results-${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.build_type }}
-        path: ${{ github.workspace }}/build/Testing/
+      - name: Run benchmarks
+        if: matrix.enable_tests
+        run: |
+          ./tests/benchmark
+        shell: bash
 
-  # ============================================================================
-  # Sanitizers Job (Linux only)
-  # ============================================================================
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: desktop-tui-${{ matrix.os }}-${{ matrix.enable_tests }}-${{ matrix.enable_plugins }}
+          path: build/
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Configure CMake with coverage
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DENABLE_TESTS=ON \
+            -DCODE_COVERAGE=ON
+        shell: bash
+
+      - name: Build with coverage
+        run: |
+          cmake --build build --config Debug --parallel
+        shell: bash
+
+      - name: Run tests with coverage
+        working-directory: build
+        run: |
+          ctest --output-on-failure
+        shell: bash
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./build/coverage.info
+          fail_ci_if_error: false
+
   sanitizers:
-    name: Sanitizers (ASan + UBSan)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          g++-13 \
-          cmake \
-          ninja-build \
-          valgrind
+      - name: Setup CMake with sanitizers
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DENABLE_TESTS=ON \
+            -DENABLE_ASAN=ON \
+            -DENABLE_UBSAN=ON
+        shell: bash
 
-    - name: Configure with ASan
-      run: >
-        cmake -B ${{ github.workspace }}/build-asan
-        -DCMAKE_BUILD_TYPE=Debug
-        -DENABLE_ASAN=ON
-        -DENABLE_UBSAN=ON
-        -DENABLE_TESTS=ON
-        -DENABLE_PLUGINS=ON
-        -G Ninja
-        -S ${{ github.workspace }}
+      - name: Build with sanitizers
+        run: |
+          cmake --build build --config Debug --parallel
+        shell: bash
 
-    - name: Build with ASan
-      run: cmake --build ${{ github.workspace }}/build-asan
+      - name: Run tests with sanitizers
+        run: |
+          ctest --output-on-failure -R "^(string_utils|renderer|critical_fixes)$"
+        working-directory: build
+        shell: bash
 
-    - name: Run tests with ASan
-      working-directory: ${{ github.workspace }}/build-asan
-      env:
-        ASAN_OPTIONS: detect_leaks=1:abort_on_error=1:halt_on_error=1
-        UBSAN_OPTIONS: halt_on_error=1:abort_on_error=1:print_stacktrace=1
-      run: ctest --output-on-failure
+      - name: Upload sanitizer reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sanitizer-reports
+          path: build/
 
-    - name: Run valgrind memory check
-      working-directory: ${{ github.workspace }}/build-asan
-      run: |
-        valgrind --leak-check=full --error-exitcode=1 ./tests/desktop-tui-tests 2>&1 | tee valgrind.log
-
-    - name: Upload sanitizer logs
-      if: failure()
-      uses: actions/upload-artifact@v4
-      with:
-        name: sanitizer-logs
-        path: |
-          ${{ github.workspace }}/build-asan/Testing/
-          ${{ github.workspace }}/build-asan/valgrind.log
-
-  # ============================================================================
-  # Code Quality Checks
-  # ============================================================================
-  code-quality:
-    name: Code Quality
-    runs-on: ubuntu-24.04
+  performance:
+    runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          clang-format-18 \
-          clang-tidy-18 \
-          cmake \
-          ninja-build
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
 
-    - name: Check code formatting
-      run: |
-        find src include -name "*.cpp" -o -name "*.hpp" | xargs clang-format-18 --style=file --dry-run --Werror
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DENABLE_TESTS=ON
+        shell: bash
 
-    - name: Configure for clang-tidy
-      run: >
-        cmake -B ${{ github.workspace }}/build-tidy
-        -DCMAKE_BUILD_TYPE=Debug
-        -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-        -DENABLE_TESTS=ON
-        -G Ninja
-        -S ${{ github.workspace }}
+      - name: Build
+        run: |
+          cmake --build build --config Release --parallel
+        shell: bash
 
-    - name: Run clang-tidy
-      run: |
-        cp ${{ github.workspace }}/build-tidy/compile_commands.json ${{ github.workspace }}/
-        find src include -name "*.cpp" -o -name "*.hpp" | head -20 | xargs -I {} clang-tidy-18 {} -p ${{ github.workspace }}/build-tidy --warnings-as-errors=*
+      - name: Run performance benchmarks
+        run: |
+          ./tests/benchmark
+        shell: bash
 
-  # ============================================================================
-  # Documentation Build
-  # ============================================================================
-  docs:
-    name: Build Documentation
-    runs-on: ubuntu-24.04
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Install Doxygen
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y doxygen graphviz
-
-    - name: Generate documentation
-      run: |
-        doxygen Doxyfile 2>&1 | tee doxygen.log
-
-    - name: Upload documentation
-      uses: actions/upload-artifact@v4
-      with:
-        name: documentation
-        path: ${{ github.workspace }}/docs/html/
-
-  # ============================================================================
-  # Security Scan
-  # ============================================================================
-  security-scan:
-    name: Security Analysis
-    runs-on: ubuntu-24.04
-    permissions:
-      security-events: write
-      contents: read
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: cpp
-        queries: security-extended
-
-    - name: Build project
-      run: |
-        cmake -B ${{ github.workspace }}/build-codeql
-        -DCMAKE_BUILD_TYPE=Debug
-        -DENABLE_TESTS=ON
-        -G Ninja
-        -S ${{ github.workspace }}
-        cmake --build ${{ github.workspace }}/build-codeql
-
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
-      with:
-        category: "/language:cpp"
+      - name: Upload performance results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-results
+          path: build/

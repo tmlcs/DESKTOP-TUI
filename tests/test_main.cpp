@@ -15,6 +15,7 @@ namespace tui {
     void run_event_tests(int* passed, int* failed);
     void run_widget_tests(int* passed, int* failed);
     void run_capability_detector_tests(int* passed, int* failed);
+    void run_integration_tests(int* passed, int* failed);
 }
 
 int main(int argc, char* argv[]) {
@@ -80,6 +81,12 @@ int main(int argc, char* argv[]) {
         if (strcmp(argv[1], "--capability") == 0) {
             int p = 0, f = 0;
             tui::run_capability_detector_tests(&p, &f);
+            printf("\n=== Results: %d passed, %d failed ===\n", p, f);
+            return f > 0 ? 1 : 0;
+        }
+        if (strcmp(argv[1], "--integration") == 0) {
+            int p = 0, f = 0;
+            tui::run_integration_tests(&p, &f);
             printf("\n=== Results: %d passed, %d failed ===\n", p, f);
             return f > 0 ? 1 : 0;
         }

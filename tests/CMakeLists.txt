@@ -16,11 +16,9 @@ add_executable(test_all
     test_widgets.cpp
     test_capability_detector.cpp
     test_braille_renderer.cpp
+    test_integration.cpp
     ${CMAKE_SOURCE_DIR}/src/desktop/desktop.cpp
     ${CMAKE_SOURCE_DIR}/src/desktop/desktop_manager.cpp
-    ${CMAKE_SOURCE_DIR}/src/window/window.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/panel.cpp
-    ${CMAKE_SOURCE_DIR}/src/ui/renderer.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/text_input.cpp
     ${CMAKE_SOURCE_DIR}/src/core/capability_detector.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/braille_renderer.cpp
@@ -41,6 +39,7 @@ add_test(NAME critical_fixes COMMAND test_all)
 add_test(NAME thread_safety COMMAND test_all --thread_safety)
 add_test(NAME rect_safety COMMAND test_all --rect_safety)
 add_test(NAME desktop_manager COMMAND test_all --desktop_manager)
+add_test(NAME integration COMMAND test_all --integration)
 add_test(NAME all COMMAND test_all)
 
 # Performance benchmarks (not run as tests — invoke manually)

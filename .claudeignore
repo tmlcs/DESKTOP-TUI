@@ -1,0 +1,30 @@
+# Ignorar dependencias
+
+#Doxygen Documents
+docs/html
+
+# Ignorar archivos de entorno sensibles
+.env
+.env.local
+
+# Ignorar resultados de compilación
+dist/
+build/
+
+# Ignorar registros y archivos temporales
+*.log
+tmp/
+
+# Ignora archivos grandes que llenan el contexto
+*.lock
+*.json
+vendor/
+node_modules/
+.git/
+docs/
+static/
+dist/
+# Ignora archivos binarios o imágenes
+*.png
+*.jpg
+*.pdf

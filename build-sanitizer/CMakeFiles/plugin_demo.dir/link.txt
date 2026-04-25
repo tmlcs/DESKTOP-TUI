@@ -1,1 +1,0 @@
-/usr/bin/c++ -g CMakeFiles/plugin_demo.dir/examples/plugins/demo_plugins.cpp.o CMakeFiles/plugin_demo.dir/src/plugins/dynamic_plugin.cpp.o CMakeFiles/plugin_demo.dir/src/plugins/plugin_manager.cpp.o -o plugin_demo  -ldl 

@@ -3,6 +3,7 @@
 
 #include "platform/terminal.hpp"
 #include "core/string_utils.hpp"
+#include "core/config.hpp"
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -16,15 +17,13 @@
 
 namespace tui {
 
-// SEC-03: Static atomic flag for resize signal - safe to access from signal handler
+// SEC-03: Static atomic flags for safe signal handler access
 static std::atomic<bool> g_resize_pending{false};
-
-// SEC-04: Global flag to prevent signal handling before initialization
 static std::atomic<bool> g_is_initialized{false};
 
 class PosixTerminal : public ITerminal {
 public:
-    PosixTerminal() : cols_(80), rows_(24), raw_mode_(false), alt_screen_(false) {
+    PosixTerminal() : cols_(Config::MIN_TERMINAL_COLS), rows_(Config::MIN_TERMINAL_ROWS), raw_mode_(false), alt_screen_(false) {
         // Initialize with safe defaults
         memset(&orig_termios_, 0, sizeof(orig_termios_));
         if (tcgetattr(STDIN_FILENO, &orig_termios_) != 0) {
@@ -34,6 +33,15 @@ public:
         }
         detect_capabilities();
         update_size();
+        // Hide mouse cursor immediately after initialization
+        cursor_hide();
+    }
+
+    bool is_escape_pending() const override {
+        // CRIT-02: Check for pending escape key (platform-specific)
+        // This implementation returns false as escape key handling is separate
+        // from the SIGWINCH handler (which handles terminal resize events)
+        return false;
     }
 
     ~PosixTerminal() override {
@@ -52,19 +60,19 @@ public:
             // This is not necessarily an error, but limits functionality
             // Mouse and raw mode won't work properly
         }
-        
+
         update_size();
-        
+
         // SEC-02: Validate dimensions to prevent underflow/overflow
-        if (cols_ < 10 || rows_ < 5) {
+        if (cols_ < Config::MIN_TERMINAL_COLS || rows_ < Config::MIN_TERMINAL_ROWS) {
             // Terminal too small for meaningful UI
             // Could fallback to a message or refuse to initialize
             // For now, just log the issue
         }
-        
+
         // Mark as initialized AFTER successful setup
         g_is_initialized = true;
-        
+
         // Install SIGWINCH handler that sets a flag for the main loop to detect
         struct sigaction sa;
         memset(&sa, 0, sizeof(sa));
@@ -278,11 +286,11 @@ public:
     }
 
 private:
-    // SEC-02: Constants for dimension validation
-    static constexpr int MIN_TERM_COLS = 10;
-    static constexpr int MIN_TERM_ROWS = 5;
-    static constexpr int MAX_TERM_COLS = 10000;
-    static constexpr int MAX_TERM_ROWS = 10000;
+    // SEC-02: Constants for dimension validation (now using Config namespace)
+    static constexpr int MIN_TERM_COLS = Config::MIN_TERMINAL_COLS;
+    static constexpr int MIN_TERM_ROWS = Config::MIN_TERMINAL_ROWS;
+    static constexpr int MAX_TERM_COLS = Config::MAX_TERMINAL_COLS;
+    static constexpr int MAX_TERM_ROWS = Config::MAX_TERMINAL_ROWS;
 
     void update_size() {
         struct winsize ws;
@@ -339,6 +347,7 @@ private:
         if (!g_is_initialized.load()) {
             return;
         }
+
         // Set atomic flag - safe to access from signal handler
         g_resize_pending.store(true);
     }
